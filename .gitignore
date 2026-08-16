@@ -8,6 +8,7 @@ node_modules/
 prisma/*.db
 prisma/*.db-journal
 prisma/.tmp/
+prisma/.local/
 
 # לוגים ומערכת הפעלה
 *.log

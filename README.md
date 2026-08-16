@@ -22,17 +22,20 @@ server/
 
 **פריסה בענן (הדרך המומלצת):** ראה `DEPLOY.md` — מדריך צעד־צעד ל-Render עם GitHub. השרת מגיש גם את הלקוח, אז נכנסים לכתובת אחת והכל עובד.
 
-**הרצה מקומית (אופציונלי):** מסד הנתונים מוגדר ל-PostgreSQL. להרצה מקומית צריך Postgres מותקן, או להחליף זמנית ב-`prisma/schema.prisma` את `provider` ל-`"sqlite"` ואת `DATABASE_URL` ל-`"file:./dev.db"`, ואז:
+**הרצה מקומית:** אין צורך להתקין Postgres. הרצה ראשונה:
 
 ```bash
 cd server
 npm install
-cp .env.example .env      # קבע JWT_SECRET
-npx prisma db push        # יוצר את הטבלאות
+npm run setup:local       # מסד SQLite מקומי + .env עם JWT_SECRET אקראי
 npm run dev               # http://localhost:4000
 ```
 
-פותחים בדפדפן את `http://localhost:4000` — השרת מגיש את הלקוח.
+מכאן והלאה מספיק `npm run dev`. פותחים בדפדפן את `http://localhost:4000` — השרת מגיש את הלקוח.
+
+`setup:local` גוזר עותק SQLite של הסכימה אל `prisma/.local/` ומריץ מולו, **בלי לגעת ב-`prisma/schema.prisma`** שנשאר PostgreSQL עבור הענן. כך אין סיכון לדחוף בטעות סכימת פיתוח ולשבור את הפריסה. התיקייה `prisma/.local/` ו-`.env` מוחרגים ב-`.gitignore`.
+
+לאיפוס המסד המקומי: למחוק את `prisma/.local/dev.db` ולהריץ שוב `npm run setup:local`.
 
 ## נקודות קצה (API)
 
