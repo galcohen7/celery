@@ -46,6 +46,42 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo',system-u
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;
   padding:18px;box-shadow:0 1px 2px rgba(27,30,51,.04);}
 
+/* ===== מחליף תצוגה ראשי: שכר / הוצאות ===== */
+.views{display:flex;gap:6px;background:var(--indigo-soft);border-radius:13px;padding:5px;margin-bottom:18px;}
+.view-btn{flex:1;font-family:'Rubik',sans-serif;font-weight:600;font-size:14.5px;
+  padding:10px;border-radius:9px;border:none;background:transparent;color:var(--muted);
+  cursor:pointer;transition:background .15s,color .15s;}
+.view-btn:hover{color:var(--indigo);}
+.view-btn.active{background:var(--surface);color:var(--indigo);box-shadow:0 1px 3px rgba(27,30,51,.1);}
+
+/* ===== הוצאות ===== */
+.td-desc{font-weight:500;}
+.td-merchant{color:var(--muted);font-size:12px;}
+.cat-chip{display:inline-block;font-size:11.5px;font-weight:500;padding:3px 9px;
+  border-radius:99px;background:var(--indigo-soft);color:var(--indigo);white-space:nowrap;}
+.td-amount{font-family:'Rubik',sans-serif;font-weight:700;color:var(--danger);white-space:nowrap;}
+.tbl tfoot td.td-amount{color:var(--danger);}
+
+.breakdown{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);}
+.breakdown h3{font-family:'Rubik',sans-serif;font-weight:700;font-size:14px;margin:0 0 11px;color:var(--muted);}
+.bd-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+.bd-name{font-size:13px;width:78px;flex:0 0 auto;}
+.bd-bar{flex:1;height:7px;border-radius:99px;background:var(--indigo-soft);overflow:hidden;}
+.bd-fill{height:100%;border-radius:99px;background:var(--accent);}
+.bd-val{font-family:'Rubik',sans-serif;font-weight:600;font-size:12.5px;width:82px;text-align:left;flex:0 0 auto;}
+
+.mom{font-size:12.5px;margin-top:3px;}
+.mom.up{color:var(--danger);}
+.mom.down{color:var(--green);}
+.mom.flat{color:var(--muted);}
+
+.fg select{font-family:'Heebo',sans-serif;font-size:15px;padding:10px 12px;
+  border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);width:100%;}
+.fg select:focus{outline:none;border-color:var(--indigo);}
+.modal .lock-err{text-align:center;}
+.danger-link{background:none;border:none;color:var(--danger);font-family:'Heebo',sans-serif;
+  font-size:13px;cursor:pointer;margin-top:10px;padding:4px;width:100%;text-decoration:underline;}
+
 .tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;scrollbar-width:thin;}
 .tab{flex:0 0 auto;font-family:'Heebo',sans-serif;font-size:13.5px;font-weight:500;
   padding:8px 15px;border-radius:99px;border:1.5px solid var(--line);background:#fff;
@@ -247,7 +283,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo',system-u
       </div>
       <div class="head-actions">
         <div class="grand" id="grand" style="display:none">
-          <span class="grand-label">סה״כ נצבר</span>
+          <span class="grand-label" id="grandLabel">סה״כ נצבר</span>
           <span class="grand-val" id="grandVal"></span>
         </div>
         <button class="lock-toggle" id="logoutBtn" aria-label="התנתקות" style="display:none">🚪</button>
@@ -257,7 +293,13 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo',system-u
 
   <div class="banner hidden" id="banner"></div>
 
+  <div class="views" id="views">
+    <button class="view-btn active" data-view="salary">שכר</button>
+    <button class="view-btn" data-view="expenses">הוצאות</button>
+  </div>
+
   <button class="add-btn" id="openCal"><span class="plus">＋</span> הכנס יום עבודה</button>
+  <button class="add-btn" id="openExp" style="display:none"><span class="plus">＋</span> הוסף הוצאה</button>
 
   <div id="content"></div>
 
@@ -352,6 +394,29 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo',system-u
   </div>
 </div>
 
+<!-- ===== הוצאה ===== -->
+<div class="overlay hidden" id="expOverlay">
+  <div class="modal">
+    <h3 id="expTitle">הוצאה חדשה</h3>
+    <p class="m-sub">הקטגוריה מוצעת אוטומטית מהתיאור, ואפשר לשנות אותה.</p>
+    <div class="grid2">
+      <div class="fg"><label for="expDate">תאריך</label><input id="expDate" type="date"></div>
+      <div class="fg"><label for="expAmount">סכום (₪)</label><input id="expAmount" type="number" step="0.01" min="0" inputmode="decimal"></div>
+      <div class="fg" style="grid-column:1/-1"><label for="expDesc">תיאור</label>
+        <input id="expDesc" type="text" placeholder="למשל: קניות בסופר" maxlength="200"></div>
+      <div class="fg"><label for="expCat">קטגוריה</label><select id="expCat"></select></div>
+      <div class="fg"><label for="expMerchant">בית עסק</label>
+        <input id="expMerchant" type="text" placeholder="אופציונלי" maxlength="80"></div>
+    </div>
+    <p class="lock-err" id="expErr"></p>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="expSave">שמור</button>
+      <button class="btn btn-ghost" id="expCancel">ביטול</button>
+    </div>
+    <button class="danger-link" id="expDelete" style="display:none">מחיקת ההוצאה</button>
+  </div>
+</div>
+
 <!-- ===== אישור ===== -->
 <div class="overlay hidden" id="confirmOverlay">
   <div class="modal">
@@ -426,7 +491,29 @@ async function fetchEntries(){ entries = await api("/workdays"); }
 function upsertDay(d){ return api("/workdays",{method:"POST",body:JSON.stringify(d)}); }
 function deleteDay(date){ return api("/workdays/"+date,{method:"DELETE"}); }
 
+// פעולות שרת על הוצאות
+async function fetchExpenses(){ expenses = await api("/expenses"); }
+async function fetchCategories(){ expCategories = (await api("/expenses/categories")).categories; }
+function createExpense(b){ return api("/expenses",{method:"POST",body:JSON.stringify(b)}); }
+function updateExpense(id,b){ return api("/expenses/"+id,{method:"PUT",body:JSON.stringify(b)}); }
+function deleteExpense(id){ return api("/expenses/"+id,{method:"DELETE"}); }
+function suggestCategory(description,merchant){
+  return api("/expenses/suggest-category",{method:"POST",body:JSON.stringify({description,merchant})});
+}
+
+/* ---------- כסף ----------
+   השרת עובד באגורות (מספר שלם) כדי למנוע שגיאות צבירה עשרוניות.
+   ההמרה לשקלים קורית כאן בלבד, בקצה התצוגה. */
+const agToShekels = a => Number(a||0)/100;
+const fmtAg = a => agToShekels(a).toLocaleString("he-IL",
+  { minimumFractionDigits: (Math.abs(Number(a||0))%100) ? 2 : 0, maximumFractionDigits: 2 });
+
 let entries=[];
+let expenses=[], expCategories=[];
+let view="salary";                 // salary | expenses
+let expSelectedKey=null;           // החודש הנבחר בתצוגת ההוצאות
+let editingExpenseId=null;         // null = הוצאה חדשה
+let expCatTouched=false;           // המשתמש נגע בקטגוריה? אז לא לדרוס בהצעה
 let currentUser=null;
 let selectedKey=null;
 let calYear,calMonth,draftMap={};
@@ -570,7 +657,12 @@ function groupByMonth(){
     return {key,year:key.slice(0,4),monthIdx:+key.slice(5,7)-1,items,total:items.reduce((s,e)=>s+Number(e.salary),0)};
   }).sort((a,b)=>b.key.localeCompare(a.key));
 }
-function render(){
+// מפזר לתצוגה הפעילה. כל הקוראים הקיימים (שמירה, ייבוא, טאבים) ממשיכים
+// לקרוא ל-render() ולא צריכים לדעת באיזו תצוגה אנחנו.
+function render(){ view==="salary" ? renderSalary() : renderExpenses(); }
+
+function renderSalary(){
+  $("grandLabel").textContent="סה״כ נצבר";
   const grand=entries.reduce((s,e)=>s+Number(e.salary),0);
   if(entries.length){grandEl.style.display="flex";grandValEl.innerHTML=fmtMoney(grand)+' <em>₪</em>';}
   else grandEl.style.display="none";
@@ -607,6 +699,173 @@ function render(){
   contentEl.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{selectedKey=b.dataset.key;render();}));
   contentEl.querySelectorAll(".row-edit").forEach(b=>b.addEventListener("click",()=>openEditor(b.dataset.edit,"list")));
 }
+
+/* ---------- תצוגת הוצאות ---------- */
+function groupExpensesByMonth(){
+  const map={}; for(const x of expenses){const k=x.date.slice(0,7);(map[k]=map[k]||[]).push(x);}
+  return Object.keys(map).map(key=>{
+    const items=map[key].slice().sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+    return {key,year:key.slice(0,4),monthIdx:+key.slice(5,7)-1,items,
+      total:items.reduce((s,x)=>s+Number(x.amountAgorot),0)};
+  }).sort((a,b)=>b.key.localeCompare(a.key));
+}
+// המחרוזת של החודש הקודם ביומן, לא הקבוצה הקודמת ברשימה — אחרת חודש
+// שאין בו הוצאות היה גורם להשוואה מול חודש רחוק ומטעה.
+function prevMonthKey(key){
+  const y=+key.slice(0,4), m=+key.slice(5,7);
+  return m===1 ? `${y-1}-12` : `${y}-${pad(m-1)}`;
+}
+function renderExpenses(){
+  $("grandLabel").textContent="סה״כ הוצאות";
+  const grand=expenses.reduce((s,x)=>s+Number(x.amountAgorot),0);
+  if(expenses.length){grandEl.style.display="flex";grandValEl.innerHTML=fmtAg(grand)+' <em>₪</em>';}
+  else grandEl.style.display="none";
+
+  if(expenses.length===0){
+    contentEl.innerHTML='<div class="card empty-state"><p>עדיין לא רשמת הוצאות.</p><p class="empty-sub">הקש על «הוסף הוצאה» כדי להתחיל.</p></div>';
+    return;
+  }
+
+  const groups=groupExpensesByMonth();
+  if(!groups.some(g=>g.key===expSelectedKey)) expSelectedKey=groups[0].key;
+  const g=groups.find(x=>x.key===expSelectedKey);
+  const tabs=groups.map(x=>`<button class="tab ${x.key===expSelectedKey?"active":""}" data-key="${x.key}">${HEB_MONTHS[x.monthIdx]} ${x.year}</button>`).join("");
+
+  const rows=g.items.map(x=>`<tr>
+      <td class="td-date">${prettyDate(x.date).slice(0,5)}</td>
+      <td><div class="td-desc">${esc(x.description)}</div>${x.merchant?`<div class="td-merchant">${esc(x.merchant)}</div>`:""}</td>
+      <td><span class="cat-chip">${esc(x.category)}</span></td>
+      <td class="td-amount">${fmtAg(x.amountAgorot)} ₪</td>
+      <td class="td-actions"><button class="row-edit" data-exp="${x.id}" aria-label="עריכת הוצאה">✎</button></td>
+    </tr>`).join("");
+
+  // פילוח לפי קטגוריה, מהגדולה לקטנה
+  const byCat={}; for(const x of g.items) byCat[x.category]=(byCat[x.category]||0)+Number(x.amountAgorot);
+  const cats=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+  const maxCat=cats.length?cats[0][1]:1;
+  const breakdown=cats.map(([name,amount])=>`<div class="bd-row">
+      <span class="bd-name">${esc(name)}</span>
+      <span class="bd-bar"><span class="bd-fill" style="width:${Math.round(amount/maxCat*100)}%"></span></span>
+      <span class="bd-val">${fmtAg(amount)} ₪</span>
+    </div>`).join("");
+
+  // השוואה לחודש הקודם
+  const prev=groups.find(x=>x.key===prevMonthKey(g.key));
+  let mom="";
+  if(prev && prev.total>0){
+    const diff=Math.round((g.total-prev.total)/prev.total*100);
+    const cls=diff>0?"up":diff<0?"down":"flat";
+    const arrow=diff>0?"▲":diff<0?"▼":"=";
+    mom=`<div class="mom ${cls}">${arrow} ${Math.abs(diff)}% מ${HEB_MONTHS[prev.monthIdx]}</div>`;
+  }
+
+  contentEl.innerHTML=`
+    <div class="tabs">${tabs}</div>
+    <section class="card">
+      <div class="panel-head">
+        <div class="panel-title"><h2>${HEB_MONTHS[g.monthIdx]} <span>${g.year}</span></h2>
+          <div class="panel-meta">${g.items.length} הוצאות</div></div>
+        <div class="panel-total"><span class="pt-label">סה״כ החודש</span>
+          <span class="pt-val">${fmtAg(g.total)} <em>₪</em></span>${mom}</div>
+      </div>
+      <table class="tbl">
+        <thead><tr><th>תאריך</th><th>תיאור</th><th>קטגוריה</th><th>סכום</th><th></th></tr></thead>
+        <tbody>${rows}</tbody>
+        <tfoot><tr><td colspan="3" class="tfoot-label">סה״כ ${g.items.length} הוצאות</td>
+          <td class="td-amount">${fmtAg(g.total)} ₪</td><td></td></tr></tfoot>
+      </table>
+      <div class="breakdown"><h3>פילוח לפי קטגוריה</h3>${breakdown}</div>
+    </section>`;
+  contentEl.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{expSelectedKey=b.dataset.key;render();}));
+  contentEl.querySelectorAll(".row-edit").forEach(b=>b.addEventListener("click",()=>openExpense(+b.dataset.exp)));
+}
+
+/* ---------- מחליף תצוגה ---------- */
+function setView(v){
+  view=v;
+  document.querySelectorAll(".view-btn").forEach(b=>b.classList.toggle("active",b.dataset.view===v));
+  $("openCal").style.display = v==="salary" ? "flex" : "none";
+  $("openExp").style.display = v==="expenses" ? "flex" : "none";
+  render();
+}
+$("views").addEventListener("click",e=>{
+  const b=e.target.closest(".view-btn"); if(b) setView(b.dataset.view);
+});
+
+/* ---------- עריכת הוצאה ---------- */
+const expOverlay=$("expOverlay"),expDate=$("expDate"),expAmount=$("expAmount"),
+  expDesc=$("expDesc"),expCat=$("expCat"),expMerchant=$("expMerchant"),expErr=$("expErr");
+
+function fillCategories(selected){
+  expCat.innerHTML=expCategories.map(c=>`<option value="${esc(c)}"${c===selected?" selected":""}>${esc(c)}</option>`).join("");
+}
+function openExpense(id){
+  editingExpenseId = id ?? null;
+  expErr.textContent="";
+  const x = id!=null ? expenses.find(e=>e.id===id) : null;
+  expCatTouched = !!x;                       // בעריכה מכבדים את הקטגוריה הקיימת
+  $("expTitle").textContent = x ? "עריכת הוצאה" : "הוצאה חדשה";
+  $("expDelete").style.display = x ? "block" : "none";
+  expDate.value    = x ? x.date : new Date().toISOString().slice(0,10);
+  expAmount.value  = x ? agToShekels(x.amountAgorot) : "";
+  expDesc.value    = x ? x.description : "";
+  expMerchant.value= x && x.merchant ? x.merchant : "";
+  fillCategories(x ? x.category : (expCategories[expCategories.length-1]||""));
+  expOverlay.classList.remove("hidden");
+  setTimeout(()=>expAmount.focus?.(),50);
+}
+
+// הצעת קטגוריה חיה, מושהית — שלא נשלח בקשה על כל הקשה.
+let suggestTimer=null;
+function scheduleSuggest(){
+  if(expCatTouched) return;                  // המשתמש בחר בעצמו — לא דורסים
+  clearTimeout(suggestTimer);
+  suggestTimer=setTimeout(async()=>{
+    const d=expDesc.value.trim(); if(!d) return;
+    try{
+      const r=await suggestCategory(d,expMerchant.value.trim());
+      if(!expCatTouched) fillCategories(r.category);
+    }catch(e){ /* הצעה בלבד — כישלון לא אמור להפריע להזנה */ }
+  },350);
+}
+expDesc.addEventListener("input",scheduleSuggest);
+expMerchant.addEventListener("input",scheduleSuggest);
+expCat.addEventListener("change",()=>{expCatTouched=true;});
+
+$("expSave").addEventListener("click",async()=>{
+  expErr.textContent="";
+  const amount=Number(expAmount.value);
+  if(!expDate.value){ expErr.textContent="יש לבחור תאריך"; return; }
+  if(!Number.isFinite(amount)||amount<=0){ expErr.textContent="יש להזין סכום גדול מאפס"; return; }
+  if(!expDesc.value.trim()){ expErr.textContent="יש להזין תיאור"; return; }
+
+  const body={date:expDate.value,amount,description:expDesc.value.trim(),
+    category:expCat.value,merchant:expMerchant.value.trim()||null};
+  $("expSave").disabled=true;
+  try{
+    if(editingExpenseId!=null) await updateExpense(editingExpenseId,body);
+    else await createExpense(body);
+    await fetchExpenses();
+    expSelectedKey=expDate.value.slice(0,7);   // קופצים לחודש שאליו נשמר
+    expOverlay.classList.add("hidden");
+    render(); toast(editingExpenseId!=null?"ההוצאה עודכנה":"ההוצאה נוספה");
+  }catch(e){ expErr.textContent = e.message==="unauthorized" ? "נדרשת התחברות מחדש" : e.message; }
+  finally{ $("expSave").disabled=false; }
+});
+$("expCancel").addEventListener("click",()=>expOverlay.classList.add("hidden"));
+$("expDelete").addEventListener("click",()=>{
+  const id=editingExpenseId; if(id==null) return;
+  askConfirm("מחיקת הוצאה","למחוק את ההוצאה הזו לצמיתות?",async()=>{
+    try{
+      await deleteExpense(id); await fetchExpenses();
+      expOverlay.classList.add("hidden"); render(); toast("ההוצאה נמחקה");
+    }catch(e){ toast("שגיאה במחיקה"); }
+  });
+});
+$("openExp").addEventListener("click",()=>openExpense());
+[expDate,expAmount,expDesc,expMerchant].forEach(inp=>inp.addEventListener("keydown",e=>{
+  if(e.key==="Enter"){e.preventDefault();$("expSave").click();}
+}));
 
 /* ---------- גיבוי / שחזור ---------- */
 $("exportBtn").addEventListener("click",()=>{
@@ -670,6 +929,10 @@ function showAuth(mode){
 function greet(){
   taglineEl.textContent = currentUser ? ("שלום, "+currentUser.displayName) : TAGLINE;
 }
+// טעינת כל נתוני המשתמש במקביל. משמש בהתחברות, בהרשמה ובטעינת הדף.
+async function loadAllData(){
+  await Promise.all([fetchEntries(), fetchExpenses(), fetchCategories()]);
+}
 function loadApp(){
   authOverlay.classList.add("hidden");
   $("logoutBtn").style.display="inline-flex";
@@ -690,13 +953,13 @@ authBtn.addEventListener("click",async()=>{
   try{
     if(authMode==="login"){
       const d=await api("/auth/login",{method:"POST",body:JSON.stringify({email,password:p1})});
-      setToken(d.token); currentUser=d.user; await fetchEntries(); loadApp();
+      setToken(d.token); currentUser=d.user; await loadAllData(); loadApp();
     }else if(authMode==="register"){
       if(!first||!last){ authErr.textContent="יש למלא שם פרטי ושם משפחה"; return; }
       if(p1.length<6){ authErr.textContent="הסיסמה חייבת 6 תווים לפחות"; return; }
       if(p1!==p2){ authErr.textContent="הסיסמאות אינן תואמות"; return; }
       const d=await api("/auth/register",{method:"POST",body:JSON.stringify({firstName:first,lastName:last,email,password:p1})});
-      setToken(d.token); currentUser=d.user; await fetchEntries(); loadApp(); toast("החשבון נוצר, ברוך הבא "+d.user.displayName);
+      setToken(d.token); currentUser=d.user; await loadAllData(); loadApp(); toast("החשבון נוצר, ברוך הבא "+d.user.displayName);
     }else if(authMode==="forgot"){
       const d=await api("/auth/forgot-password",{method:"POST",body:JSON.stringify({email})});
       showAuth("reset");
@@ -716,8 +979,10 @@ authBtn.addEventListener("click",async()=>{
 [authFirst,authLast,authEmail,authRtoken,authPw1,authPw2].forEach(inp=>inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();authBtn.click();}}));
 
 $("logoutBtn").addEventListener("click",()=>{
-  token=null; currentUser=null; localStorage.removeItem(TOKEN_KEY); entries=[];
+  token=null; currentUser=null; localStorage.removeItem(TOKEN_KEY);
+  entries=[]; expenses=[]; expSelectedKey=null; selectedKey=null;
   contentEl.innerHTML=""; grandEl.style.display="none"; greet();
+  setView("salary");   // חשבון הבא מתחיל מהתצוגה הראשית
   showAuth("login");
 });
 
@@ -729,7 +994,7 @@ async function init(){
     // הטוקן הוא מקור האמת לזהות — שולפים את המשתמש מהשרת ולא מ-localStorage,
     // כדי שרענון דף יציג את הברכה הנכונה גם אחרי החלפת חשבון.
     const d=await api("/auth/me"); currentUser=d.user;
-    await fetchEntries(); loadApp();
+    await loadAllData(); loadApp();
   }
   catch(e){
     if(e.message==="unauthorized"){ showAuth("login"); }

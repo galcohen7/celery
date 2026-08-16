@@ -15,6 +15,7 @@ app.get("/api/health", (req, res) => res.json({ ok: true }));
 
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/workdays", require("./routes/workdayRoutes"));
+app.use("/api/expenses", require("./routes/expenseRoutes"));
 
 // טיפול בנתיב לא קיים
 app.use((req, res) => res.status(404).json({ error: "לא נמצא" }));

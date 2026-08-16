@@ -20,6 +20,7 @@ model User {
   passwordHash String
   createdAt    DateTime             @default(now())
   workdays     WorkDay[]
+  expenses     Expense[]
   resetTokens  PasswordResetToken[]
 }
 
@@ -34,6 +35,26 @@ model WorkDay {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, date])
+}
+
+// סכומים נשמרים ב**אגורות** כמספר שלם, לא בשקלים עשרוניים.
+// הוצאות מגיעות עם אגורות (42.90) ובשלב D יושוו לשורות עו״ש; חישוב עשרוני
+// ב-JS היה מכניס שגיאות צבירה (0.1+0.2). המרה לשקלים נעשית בקצה התצוגה בלבד.
+// הערה: `category` ו-`source` הם String ולא enum — Prisma לא תומך ב-enum ב-SQLite,
+// וזה היה שובר את ההרצה המקומית.
+model Expense {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  date        String   // 'YYYY-MM-DD'
+  amountAgorot Int
+  description String   // טקסט חופשי — השדה המרכזי בהזנה
+  category    String   // נגזר אוטומטית מהתיאור, ניתן לעריכה
+  merchant    String?
+  source      String   @default("MANUAL") // MANUAL | STATEMENT
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
 }
 
 model PasswordResetToken {
