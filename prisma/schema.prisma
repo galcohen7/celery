@@ -9,9 +9,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// firstName/lastName אופציונליים בסכימה בכוונה: חשבונות שנוצרו לפני שלב B1
+// אינם מכילים אותם, ועמודה חובה הייתה מפילה את המיגרציה על שורות קיימות.
+// בהרשמה חדשה שניהם נדרשים — האכיפה בשכבת ה-controller.
 model User {
   id           Int                  @id @default(autoincrement())
   email        String               @unique
+  firstName    String?
+  lastName     String?
   passwordHash String
   createdAt    DateTime             @default(now())
   workdays     WorkDay[]

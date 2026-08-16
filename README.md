@@ -47,8 +47,12 @@ npm run dev               # http://localhost:4000
 ## נקודות קצה (API)
 
 אימות:
-- `POST /api/auth/register` — body: `{ "email", "password" }` → מחזיר `{ token, user }`
+- `POST /api/auth/register` — body: `{ "firstName", "lastName", "email", "password" }` → מחזיר `{ token, user }`
 - `POST /api/auth/login` — body: `{ "email", "password" }` → מחזיר `{ token, user }`
+- `GET /api/auth/me` — דורש טוקן → מחזיר `{ user }` (הלקוח קורא לזה בטעינה כדי להציג את הברכה)
+
+אובייקט `user` מכיל `{ id, email, firstName, lastName, displayName }`. `displayName` נגזר בשרת:
+השם הפרטי, ובחשבונות ישנים שנוצרו לפני שדות השם — החלק שלפני ה-`@` באימייל.
 - `POST /api/auth/forgot-password` — body: `{ "email" }` → בפיתוח מחזיר `{ devToken }`
 - `POST /api/auth/reset-password` — body: `{ "token", "password" }`
 

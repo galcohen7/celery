@@ -180,6 +180,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo',system-u
 .lock-sub{font-size:13.5px;color:var(--muted);margin:0 0 20px;line-height:1.5;}
 .lock-input{width:100%;font-family:'Heebo',sans-serif;font-size:16px;padding:13px 15px;
   border:1.5px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);margin-bottom:10px;text-align:center;}
+.name-row{display:flex;gap:8px;}
+.name-row .lock-input{min-width:0;}
 .lock-input:focus{outline:none;border-color:var(--indigo);}
 .lock-err{color:var(--danger);font-size:13px;min-height:18px;margin:2px 0 8px;}
 .lock-btn{width:100%;padding:14px;background:var(--indigo);color:#fff;}
@@ -240,7 +242,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo',system-u
 </svg>
         <div>
           <h1 class="wordmark">Celery</h1>
-          <p class="sub">יומן שכר ומעקב הוצאות</p>
+          <p class="sub" id="tagline">יומן שכר ומעקב הוצאות</p>
         </div>
       </div>
       <div class="head-actions">
@@ -291,6 +293,10 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo',system-u
 </svg>
     <h2 id="authTitle">התחברות</h2>
     <p class="lock-sub" id="authSub"></p>
+    <div class="name-row" id="authNames" style="display:none">
+      <input type="text" id="authFirst" class="lock-input" placeholder="שם פרטי" autocomplete="given-name">
+      <input type="text" id="authLast" class="lock-input" placeholder="שם משפחה" autocomplete="family-name">
+    </div>
     <input type="email" id="authEmail" class="lock-input" placeholder="אימייל" autocomplete="username">
     <input type="text" id="authRtoken" class="lock-input" placeholder="קוד איפוס" style="display:none">
     <input type="password" id="authPw1" class="lock-input" placeholder="סיסמה" autocomplete="current-password">
@@ -410,7 +416,7 @@ async function api(path, opts={}){
   const headers = {"Content-Type":"application/json", ...(opts.headers||{})};
   if(token) headers["Authorization"] = "Bearer "+token;
   const res = await fetch(API+path, {...opts, headers});
-  if(res.status===401){ token=null; localStorage.removeItem(TOKEN_KEY); showAuth("login"); throw new Error("unauthorized"); }
+  if(res.status===401){ token=null; currentUser=null; localStorage.removeItem(TOKEN_KEY); showAuth("login"); throw new Error("unauthorized"); }
   const data = await res.json().catch(()=>({}));
   if(!res.ok) throw new Error(data.error || "שגיאת שרת");
   return data;
@@ -421,6 +427,7 @@ function upsertDay(d){ return api("/workdays",{method:"POST",body:JSON.stringify
 function deleteDay(date){ return api("/workdays/"+date,{method:"DELETE"}); }
 
 let entries=[];
+let currentUser=null;
 let selectedKey=null;
 let calYear,calMonth,draftMap={};
 let pendingYes=null, editing=null, editContext="cal";
@@ -633,33 +640,40 @@ $("importFile").addEventListener("change",e=>{
 /* ---------- התחברות / הרשמה / שחזור סיסמה ---------- */
 const authOverlay=$("authOverlay"),authTitle=$("authTitle"),authSub=$("authSub"),
   authEmail=$("authEmail"),authPw1=$("authPw1"),authPw2=$("authPw2"),authRtoken=$("authRtoken"),
+  authFirst=$("authFirst"),authLast=$("authLast"),authNames=$("authNames"),
   authErr=$("authErr"),authBtn=$("authBtn"),authAlt=$("authAlt"),authForgot=$("authForgot"),
-  authNote=$("authNote"),bannerEl=$("banner");
+  authNote=$("authNote"),bannerEl=$("banner"),taglineEl=$("tagline");
 let authMode="login";
+const TAGLINE="יומן שכר ומעקב הוצאות";
 
 function showAuth(mode){
   authMode=mode; authErr.textContent="";
   authPw1.value=""; authPw2.value=""; authRtoken.value="";
+  authFirst.value=""; authLast.value="";
   $("logoutBtn").style.display="none";
   const show=(el,on)=>el.style.display=on?"block":"none";
   const M={
-    login:{t:"התחברות",s:"היכנס עם האימייל והסיסמה שלך.",email:1,rtoken:0,pw1:1,pw2:0,b:"כניסה",alt:"אין לך חשבון? הרשמה",forgot:1,n:""},
-    register:{t:"הרשמה",s:"פתח חשבון חדש עם אימייל וסיסמה.",email:1,rtoken:0,pw1:1,pw2:1,b:"צור חשבון",alt:"כבר יש חשבון? התחברות",forgot:0,n:"הסיסמה נשמרת מוצפנת (hash) ולא כטקסט גלוי."},
-    forgot:{t:"שחזור סיסמה",s:"הזן את האימייל שלך לקבלת קוד איפוס.",email:1,rtoken:0,pw1:0,pw2:0,b:"שלח קוד איפוס",alt:"חזרה להתחברות",forgot:0,n:""},
-    reset:{t:"סיסמה חדשה",s:"הזן את קוד האיפוס וקבע סיסמה חדשה.",email:0,rtoken:1,pw1:1,pw2:1,b:"עדכן סיסמה",alt:"חזרה להתחברות",forgot:0,n:""}
+    login:{t:"התחברות",s:"היכנס עם האימייל והסיסמה שלך.",names:0,email:1,rtoken:0,pw1:1,pw2:0,b:"כניסה",alt:"אין לך חשבון? הרשמה",forgot:1,n:""},
+    register:{t:"הרשמה",s:"פתח חשבון חדש — נעים להכיר.",names:1,email:1,rtoken:0,pw1:1,pw2:1,b:"צור חשבון",alt:"כבר יש חשבון? התחברות",forgot:0,n:"הסיסמה נשמרת מוצפנת (hash) ולא כטקסט גלוי."},
+    forgot:{t:"שחזור סיסמה",s:"הזן את האימייל שלך לקבלת קוד איפוס.",names:0,email:1,rtoken:0,pw1:0,pw2:0,b:"שלח קוד איפוס",alt:"חזרה להתחברות",forgot:0,n:""},
+    reset:{t:"סיסמה חדשה",s:"הזן את קוד האיפוס וקבע סיסמה חדשה.",names:0,email:0,rtoken:1,pw1:1,pw2:1,b:"עדכן סיסמה",alt:"חזרה להתחברות",forgot:0,n:""}
   }[mode];
   authTitle.textContent=M.t; authSub.textContent=M.s;
+  authNames.style.display=M.names?"flex":"none";   // שורת השמות היא flex, לא block
   show(authEmail,M.email); show(authRtoken,M.rtoken); show(authPw1,M.pw1); show(authPw2,M.pw2);
   authBtn.textContent=M.b; authAlt.textContent=M.alt;
   authForgot.style.display=M.forgot?"block":"none";
   authNote.textContent=M.n;
   authOverlay.classList.remove("hidden");
-  setTimeout(()=>{(M.email?authEmail:authRtoken).focus?.();},50);
+  setTimeout(()=>{(M.names?authFirst:M.email?authEmail:authRtoken).focus?.();},50);
+}
+function greet(){
+  taglineEl.textContent = currentUser ? ("שלום, "+currentUser.displayName) : TAGLINE;
 }
 function loadApp(){
   authOverlay.classList.add("hidden");
   $("logoutBtn").style.display="inline-flex";
-  render();
+  greet(); render();
 }
 function setToken(t){ token=t; localStorage.setItem(TOKEN_KEY,t); }
 
@@ -671,16 +685,18 @@ authForgot.addEventListener("click",()=>showAuth("forgot"));
 authBtn.addEventListener("click",async()=>{
   authErr.textContent="";
   const email=authEmail.value.trim(), p1=authPw1.value, p2=authPw2.value, rt=authRtoken.value.trim();
+  const first=authFirst.value.trim(), last=authLast.value.trim();
   authBtn.disabled=true;
   try{
     if(authMode==="login"){
       const d=await api("/auth/login",{method:"POST",body:JSON.stringify({email,password:p1})});
-      setToken(d.token); await fetchEntries(); loadApp();
+      setToken(d.token); currentUser=d.user; await fetchEntries(); loadApp();
     }else if(authMode==="register"){
+      if(!first||!last){ authErr.textContent="יש למלא שם פרטי ושם משפחה"; return; }
       if(p1.length<6){ authErr.textContent="הסיסמה חייבת 6 תווים לפחות"; return; }
       if(p1!==p2){ authErr.textContent="הסיסמאות אינן תואמות"; return; }
-      const d=await api("/auth/register",{method:"POST",body:JSON.stringify({email,password:p1})});
-      setToken(d.token); await fetchEntries(); loadApp(); toast("החשבון נוצר");
+      const d=await api("/auth/register",{method:"POST",body:JSON.stringify({firstName:first,lastName:last,email,password:p1})});
+      setToken(d.token); currentUser=d.user; await fetchEntries(); loadApp(); toast("החשבון נוצר, ברוך הבא "+d.user.displayName);
     }else if(authMode==="forgot"){
       const d=await api("/auth/forgot-password",{method:"POST",body:JSON.stringify({email})});
       showAuth("reset");
@@ -697,11 +713,11 @@ authBtn.addEventListener("click",async()=>{
       : (e.message==="Failed to fetch" ? "אין חיבור לשרת. ודא שהשרת רץ." : e.message);
   }finally{ authBtn.disabled=false; }
 });
-[authEmail,authRtoken,authPw1,authPw2].forEach(inp=>inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();authBtn.click();}}));
+[authFirst,authLast,authEmail,authRtoken,authPw1,authPw2].forEach(inp=>inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();authBtn.click();}}));
 
 $("logoutBtn").addEventListener("click",()=>{
-  token=null; localStorage.removeItem(TOKEN_KEY); entries=[];
-  contentEl.innerHTML=""; grandEl.style.display="none";
+  token=null; currentUser=null; localStorage.removeItem(TOKEN_KEY); entries=[];
+  contentEl.innerHTML=""; grandEl.style.display="none"; greet();
   showAuth("login");
 });
 
@@ -709,7 +725,12 @@ function showBanner(msg){bannerEl.textContent=msg;bannerEl.classList.remove("hid
 
 async function init(){
   if(!token){ showAuth("login"); return; }
-  try{ await fetchEntries(); loadApp(); }
+  try{
+    // הטוקן הוא מקור האמת לזהות — שולפים את המשתמש מהשרת ולא מ-localStorage,
+    // כדי שרענון דף יציג את הברכה הנכונה גם אחרי החלפת חשבון.
+    const d=await api("/auth/me"); currentUser=d.user;
+    await fetchEntries(); loadApp();
+  }
   catch(e){
     if(e.message==="unauthorized"){ showAuth("login"); }
     else { showAuth("login"); authErr.textContent="אין חיבור לשרת. ודא שהשרת רץ על "+API.replace("/api",""); }
