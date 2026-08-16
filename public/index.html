@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#354A32" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<link rel="manifest" href='data:application/manifest+json,{"name":"Celery","short_name":"Celery","start_url":".","display":"standalone","background_color":"%23EFF3E9","theme_color":"%23354A32"}' />
+<title>Celery — יומן שכר והוצאות</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&family=Rubik:wght@500;600;700;800&display=swap');
+
+:root{
+  --bg:#EFF3E9; --surface:#FFFFFF; --ink:#232E23; --muted:#6E7A68;
+  --line:#E1E8D8; --accent:#7FA65C; --accent-deep:#5C7F3D; --accent-soft:#EAF1DE;
+  --indigo:#354A32; --indigo-soft:#E7EDE0; --sat-soft:#F1EBCF; --fri-soft:#E3EDDB;
+  --green:#4E9E68; --green-soft:#E5F0E0; --danger:#B4554E;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo',system-ui,sans-serif;}
+.sw{max-width:680px;margin:0 auto;padding:20px 16px 64px;}
+
+.head{margin-bottom:18px;}
+.head-bar{height:5px;width:64px;border-radius:99px;
+  background:linear-gradient(90deg,var(--indigo),var(--accent));margin-bottom:14px;}
+.brand{display:flex;align-items:center;gap:10px;}
+.brand-logo{width:40px;height:40px;flex:0 0 auto;}
+.wordmark{font-family:'Rubik',sans-serif;font-weight:800;font-size:27px;margin:0;
+  letter-spacing:-.5px;color:var(--indigo);line-height:1;}
+.head-row{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;}
+.head h1{font-family:'Rubik',sans-serif;font-weight:800;font-size:27px;margin:0;letter-spacing:-.5px;}
+.sub{margin:3px 0 0;color:var(--muted);font-size:13.5px;}
+.grand{display:flex;flex-direction:column;align-items:flex-end;line-height:1.1;}
+.grand-label{font-size:11px;color:var(--muted);}
+.grand-val{font-family:'Rubik',sans-serif;font-weight:700;font-size:20px;color:var(--accent-deep);}
+.grand-val em{font-style:normal;font-size:14px;}
+
+.add-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:9px;
+  font-family:'Rubik',sans-serif;font-weight:600;font-size:16px;color:#fff;background:var(--indigo);
+  border:none;border-radius:14px;padding:15px;cursor:pointer;margin-bottom:20px;
+  box-shadow:0 2px 8px rgba(44,49,84,.18);transition:filter .15s,transform .1s;}
+.add-btn:hover{filter:brightness(1.12);}
+.add-btn:active{transform:scale(.99);}
+.add-btn .plus{font-size:20px;line-height:1;}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;
+  padding:18px;box-shadow:0 1px 2px rgba(27,30,51,.04);}
+
+.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;scrollbar-width:thin;}
+.tab{flex:0 0 auto;font-family:'Heebo',sans-serif;font-size:13.5px;font-weight:500;
+  padding:8px 15px;border-radius:99px;border:1.5px solid var(--line);background:#fff;
+  color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .15s;}
+.tab:hover{border-color:var(--indigo);}
+.tab.active{background:var(--indigo);border-color:var(--indigo);color:#fff;font-weight:600;}
+
+.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;
+  padding-bottom:14px;margin-bottom:4px;border-bottom:1px solid var(--line);}
+.panel-title h2{font-family:'Rubik',sans-serif;font-weight:700;font-size:20px;margin:0;}
+.panel-title h2 span{color:var(--muted);font-weight:500;}
+.panel-meta{font-size:12.5px;color:var(--muted);margin-top:2px;}
+.panel-total{display:flex;flex-direction:column;align-items:flex-end;line-height:1.15;}
+.pt-label{font-size:11px;color:var(--muted);}
+.pt-val{font-family:'Rubik',sans-serif;font-weight:800;font-size:24px;color:var(--accent-deep);}
+.pt-val em{font-style:normal;font-size:15px;}
+
+.tbl{width:100%;border-collapse:collapse;margin-top:8px;}
+.tbl th{font-size:11.5px;font-weight:500;color:var(--muted);text-align:right;padding:8px 6px;border-bottom:1px solid var(--line);}
+.tbl td{font-size:13.5px;padding:11px 6px;border-bottom:1px solid var(--line);}
+.tbl tr:last-child td{border-bottom:none;}
+.td-date{font-family:'Rubik',sans-serif;font-weight:600;white-space:nowrap;}
+.td-day{color:var(--muted);}
+.td-day.fri{color:var(--green);}
+.td-day.sat{color:var(--accent-deep);font-weight:600;}
+.td-shift{direction:ltr;text-align:right;white-space:nowrap;}
+.td-salary{font-family:'Rubik',sans-serif;font-weight:700;color:var(--accent-deep);white-space:nowrap;}
+.tbl tfoot td{font-weight:700;border-top:2px solid var(--line);border-bottom:none;padding-top:12px;}
+.tfoot-label{color:var(--muted);font-weight:500;font-size:12.5px;}
+
+.td-actions{text-align:left;width:1%;white-space:nowrap;}
+.row-edit{background:none;border:none;color:var(--indigo);font-size:16px;cursor:pointer;
+  padding:4px 7px;border-radius:8px;transition:background .15s;}
+.row-edit:hover{background:var(--indigo-soft);}
+
+.data-tools{display:flex;gap:18px;justify-content:center;margin-top:24px;}
+.tool-link{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;
+  font-family:'Heebo',sans-serif;padding:6px 8px;border-radius:8px;transition:color .15s,background .15s;}
+.tool-link:hover{color:var(--indigo);background:var(--indigo-soft);}
+
+.empty-state{text-align:center;color:var(--muted);padding:30px 12px;}
+.empty-state p{margin:0;font-size:15px;}
+.empty-sub{margin-top:4px;font-size:13px;}
+
+/* ===== Overlays ===== */
+.overlay{position:fixed;inset:0;background:rgba(20,22,38,.55);backdrop-filter:blur(2px);
+  display:flex;align-items:center;justify-content:center;padding:16px;z-index:50;}
+.overlay.hidden{display:none;}
+
+.cal-wrap{background:var(--bg);border-radius:18px;width:100%;max-width:900px;max-height:94vh;
+  display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.cal-top{display:flex;align-items:center;gap:10px;padding:16px 18px;background:var(--surface);border-bottom:1px solid var(--line);}
+.cal-top h2{font-family:'Rubik',sans-serif;font-weight:700;font-size:19px;margin:0;flex:1;text-align:center;}
+.nav-btn{width:38px;height:38px;border-radius:10px;border:1.5px solid var(--line);background:#fff;
+  color:var(--indigo);font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+.nav-btn:hover{background:var(--indigo-soft);}
+.cal-close{margin-inline-start:4px;border:none;background:none;color:var(--muted);font-size:22px;cursor:pointer;width:34px;height:34px;border-radius:8px;}
+.cal-close:hover{background:var(--indigo-soft);color:var(--ink);}
+
+.cal-hint{padding:10px 18px 0;font-size:12.5px;color:var(--muted);text-align:center;}
+.cal-body{padding:12px 16px 4px;overflow-y:auto;}
+.cal-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px;}
+.cal-dow span{text-align:center;font-size:12px;font-weight:600;color:var(--muted);padding:4px 0;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+
+.cell{position:relative;aspect-ratio:1/1;border-radius:11px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border:1.5px solid var(--line);background:#fff;transition:transform .08s,border-color .15s,background .15s;user-select:none;}
+.cell:active{transform:scale(.95);}
+.cell.blank{background:transparent;border:none;cursor:default;}
+.cell.empty:hover{border-color:var(--indigo);background:var(--indigo-soft);}
+.cell.dow-fri.empty{background:#F3F8F5;}
+.cell.dow-sat.empty{background:#FBF6EC;}
+.cell-num{position:absolute;top:5px;right:8px;font-size:12px;font-weight:600;color:var(--muted);font-family:'Rubik',sans-serif;}
+.cell.worked{background:var(--green-soft);border-color:var(--green);}
+.cell.worked.dow-sat{background:var(--sat-soft);border-color:var(--accent);}
+.cell.worked.dow-fri{background:var(--fri-soft);border-color:var(--green);}
+.cell-check{font-size:26px;font-weight:700;color:var(--green);line-height:1;}
+.cell.worked.dow-sat .cell-check{color:var(--accent-deep);}
+.cell-pay{font-family:'Rubik',sans-serif;font-size:11px;font-weight:700;color:var(--ink);margin-top:3px;}
+.cell-edit{position:absolute;top:4px;left:5px;width:22px;height:22px;border-radius:7px;
+  border:none;background:rgba(255,255,255,.75);color:var(--indigo);font-size:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;padding:0;}
+.cell-edit:hover{background:#fff;}
+
+.cal-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:14px 18px;background:var(--surface);border-top:1px solid var(--line);}
+.cal-count{font-size:13px;color:var(--muted);}
+.cal-count b{color:var(--ink);font-family:'Rubik',sans-serif;}
+.btn{font-family:'Rubik',sans-serif;font-weight:600;font-size:15px;border:none;border-radius:11px;
+  padding:12px 24px;cursor:pointer;transition:transform .1s,filter .15s;}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:var(--accent);color:#231a06;}
+.btn-primary:hover{filter:brightness(1.05);}
+.btn-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--line);}
+.btn-ghost:hover{background:var(--bg);}
+
+/* editor + confirm cards */
+.modal{background:var(--surface);border-radius:16px;width:100%;max-width:380px;
+  padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.modal h3{font-family:'Rubik',sans-serif;font-weight:700;font-size:18px;margin:0 0 4px;}
+.modal .m-sub{font-size:13px;color:var(--muted);margin:0 0 16px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg label{font-size:12.5px;color:var(--muted);font-weight:500;}
+.fg input{font-family:'Heebo',sans-serif;font-size:15px;padding:10px 12px;border:1.5px solid var(--line);
+  border-radius:10px;background:#fff;color:var(--ink);width:100%;}
+.fg input:focus{outline:none;border-color:var(--indigo);}
+.calc{margin-top:13px;background:var(--indigo-soft);border-radius:11px;padding:11px 13px;}
+.calc-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
+.calc-label{font-size:12.5px;color:var(--muted);}
+.calc-sum{font-family:'Rubik',sans-serif;font-weight:700;font-size:17px;color:var(--indigo);}
+.calc-sum em{font-style:normal;font-size:13px;}
+.calc-break{margin-top:5px;font-size:12px;color:var(--muted);direction:ltr;text-align:right;}
+.calc-note{margin-top:4px;font-size:11.5px;color:var(--accent-deep);}
+.modal-actions{display:flex;gap:10px;margin-top:18px;}
+.modal-actions .btn{flex:1;}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--indigo);
+  color:#fff;font-size:14px;font-weight:500;padding:11px 20px;border-radius:11px;
+  box-shadow:0 6px 20px rgba(27,30,51,.25);opacity:0;pointer-events:none;transition:opacity .2s;z-index:80;}
+.toast.show{opacity:1;}
+
+/* ===== מסך נעילה ===== */
+.lock{background:linear-gradient(160deg,#20233A,#2C3154 60%,#3A4067);}
+.lock-card{background:var(--surface);border-radius:20px;width:100%;max-width:360px;padding:30px 26px;
+  text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+.lock-badge{width:56px;height:56px;border-radius:16px;background:var(--indigo-soft);
+  display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 14px;}
+.auth-logo{width:72px;height:72px;display:block;margin:0 auto 12px;}
+.lock-card h2{font-family:'Rubik',sans-serif;font-weight:700;font-size:21px;margin:0 0 6px;}
+.lock-sub{font-size:13.5px;color:var(--muted);margin:0 0 20px;line-height:1.5;}
+.lock-input{width:100%;font-family:'Heebo',sans-serif;font-size:16px;padding:13px 15px;
+  border:1.5px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);margin-bottom:10px;text-align:center;}
+.lock-input:focus{outline:none;border-color:var(--indigo);}
+.lock-err{color:var(--danger);font-size:13px;min-height:18px;margin:2px 0 8px;}
+.lock-btn{width:100%;padding:14px;background:var(--indigo);color:#fff;}
+.lock-btn:hover{filter:brightness(1.12);}
+.lock-note{font-size:11.5px;color:var(--muted);margin:14px 0 0;line-height:1.5;}
+.link-btn{background:none;border:none;color:var(--indigo);font-family:'Heebo',sans-serif;
+  font-size:13px;cursor:pointer;margin-top:12px;padding:4px;width:100%;text-decoration:underline;}
+.link-btn:hover{color:var(--accent-deep);}
+.rc-box{font-family:'Rubik',monospace;font-size:19px;font-weight:700;letter-spacing:2px;
+  background:var(--indigo-soft);color:var(--indigo);border-radius:12px;padding:16px 12px;
+  text-align:center;margin:6px 0 14px;direction:ltr;word-break:break-all;}
+.rc-ack{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin:6px 0 0;cursor:pointer;justify-content:center;}
+.rc-ack input{width:16px;height:16px;}
+
+.lock-toggle{background:none;border:1.5px solid var(--line);color:var(--muted);
+  width:38px;height:38px;border-radius:10px;font-size:16px;cursor:pointer;transition:all .15s;}
+.lock-toggle:hover{border-color:var(--indigo);color:var(--indigo);}
+.head-actions{display:flex;align-items:flex-end;gap:10px;}
+
+.banner{background:var(--accent-soft);color:var(--accent-deep);font-size:12.5px;
+  padding:10px 14px;border-radius:11px;margin-bottom:16px;text-align:center;}
+.banner.hidden{display:none;}
+
+@media (max-width:480px){
+  .head h1{font-size:23px;}
+  .grid2{grid-template-columns:1fr 1fr;}
+  .cal-grid,.cal-dow{gap:4px;}
+  .cell-check{font-size:20px;}
+  .cell-pay{font-size:10px;}
+}
+</style>
+</head>
+<body>
+<div class="sw">
+  <header class="head">
+    <div class="head-bar"></div>
+    <div class="head-row">
+      <div class="brand">
+        <svg class="brand-logo" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-label="Celery">
+  <ellipse cx="98" cy="60" rx="15" ry="20" transform="rotate(-24 98 60)" fill="#4E7C3A"/>
+  <ellipse cx="142" cy="60" rx="15" ry="20" transform="rotate(24 142 60)" fill="#4E7C3A"/>
+  <ellipse cx="120" cy="48" rx="17" ry="24" fill="#5E9143"/>
+  <ellipse cx="106" cy="50" rx="12" ry="17" transform="rotate(-14 106 50)" fill="#79AE52"/>
+  <ellipse cx="134" cy="50" rx="12" ry="17" transform="rotate(14 134 50)" fill="#79AE52"/>
+  <ellipse cx="120" cy="42" rx="11" ry="16" fill="#8CBE62"/>
+  <path d="M84 96 Q84 76 104 76 L136 76 Q156 76 156 96 L156 190 Q156 210 136 210 L104 210 Q84 210 84 190 Z" fill="#CBDFA0"/>
+  <g stroke="#AECB82" stroke-width="3.5" stroke-linecap="round" opacity="0.9"><line x1="103" y1="90" x2="103" y2="150"/><line x1="120" y1="88" x2="120" y2="150"/><line x1="137" y1="90" x2="137" y2="150"/></g>
+  <path d="M84 168 L120 186 L156 168 L156 190 Q156 210 136 210 L104 210 Q84 210 84 190 Z" fill="#354A32"/>
+  <path d="M107 168 L120 188 L133 168 Z" fill="#FFFFFF"/>
+  <path d="M107 168 L120 188 L113 172 Z" fill="#EAEFE3"/><path d="M133 168 L120 188 L127 172 Z" fill="#EAEFE3"/>
+  <path d="M116 170 L124 170 L120 179 Z" fill="#5C7F3D"/>
+  <path d="M120 179 L126 184 L122 205 L118 205 L114 184 Z" fill="#7FA65C"/>
+  <g fill="#232B22"><rect x="96" y="100" width="22" height="17" rx="7"/><rect x="122" y="100" width="22" height="17" rx="7"/><rect x="116" y="105" width="8" height="4" rx="2"/></g>
+  <g fill="#FFFFFF" opacity="0.28"><rect x="100" y="103" width="8" height="4" rx="2"/><rect x="126" y="103" width="8" height="4" rx="2"/></g>
+  <path d="M101 131 Q120 160 139 131 Z" fill="#2A2320"/><path d="M104 130 Q120 145 136 130 Z" fill="#FFFFFF"/>
+  <path d="M149 120 L151.5 126 L158 128.5 L151.5 131 L149 137 L146.5 131 L140 128.5 L146.5 126 Z" fill="#FFFFFF"/>
+  <circle cx="139" cy="139" r="2.2" fill="#FFFFFF"/>
+</svg>
+        <div>
+          <h1 class="wordmark">Celery</h1>
+          <p class="sub">יומן שכר ומעקב הוצאות</p>
+        </div>
+      </div>
+      <div class="head-actions">
+        <div class="grand" id="grand" style="display:none">
+          <span class="grand-label">סה״כ נצבר</span>
+          <span class="grand-val" id="grandVal"></span>
+        </div>
+        <button class="lock-toggle" id="logoutBtn" aria-label="התנתקות" style="display:none">🚪</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="banner hidden" id="banner"></div>
+
+  <button class="add-btn" id="openCal"><span class="plus">＋</span> הכנס יום עבודה</button>
+
+  <div id="content"></div>
+
+  <div class="data-tools">
+    <button class="tool-link" id="exportBtn">⭳ גיבוי לקובץ</button>
+    <button class="tool-link" id="importBtn">⭱ שחזור מקובץ</button>
+    <input type="file" id="importFile" accept="application/json" hidden>
+  </div>
+</div>
+
+<!-- ===== התחברות / הרשמה ===== -->
+<div class="overlay lock hidden" id="authOverlay">
+  <div class="lock-card">
+    <svg class="auth-logo" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-label="Celery">
+  <ellipse cx="98" cy="60" rx="15" ry="20" transform="rotate(-24 98 60)" fill="#4E7C3A"/>
+  <ellipse cx="142" cy="60" rx="15" ry="20" transform="rotate(24 142 60)" fill="#4E7C3A"/>
+  <ellipse cx="120" cy="48" rx="17" ry="24" fill="#5E9143"/>
+  <ellipse cx="106" cy="50" rx="12" ry="17" transform="rotate(-14 106 50)" fill="#79AE52"/>
+  <ellipse cx="134" cy="50" rx="12" ry="17" transform="rotate(14 134 50)" fill="#79AE52"/>
+  <ellipse cx="120" cy="42" rx="11" ry="16" fill="#8CBE62"/>
+  <path d="M84 96 Q84 76 104 76 L136 76 Q156 76 156 96 L156 190 Q156 210 136 210 L104 210 Q84 210 84 190 Z" fill="#CBDFA0"/>
+  <g stroke="#AECB82" stroke-width="3.5" stroke-linecap="round" opacity="0.9"><line x1="103" y1="90" x2="103" y2="150"/><line x1="120" y1="88" x2="120" y2="150"/><line x1="137" y1="90" x2="137" y2="150"/></g>
+  <path d="M84 168 L120 186 L156 168 L156 190 Q156 210 136 210 L104 210 Q84 210 84 190 Z" fill="#354A32"/>
+  <path d="M107 168 L120 188 L133 168 Z" fill="#FFFFFF"/>
+  <path d="M107 168 L120 188 L113 172 Z" fill="#EAEFE3"/><path d="M133 168 L120 188 L127 172 Z" fill="#EAEFE3"/>
+  <path d="M116 170 L124 170 L120 179 Z" fill="#5C7F3D"/>
+  <path d="M120 179 L126 184 L122 205 L118 205 L114 184 Z" fill="#7FA65C"/>
+  <g fill="#232B22"><rect x="96" y="100" width="22" height="17" rx="7"/><rect x="122" y="100" width="22" height="17" rx="7"/><rect x="116" y="105" width="8" height="4" rx="2"/></g>
+  <g fill="#FFFFFF" opacity="0.28"><rect x="100" y="103" width="8" height="4" rx="2"/><rect x="126" y="103" width="8" height="4" rx="2"/></g>
+  <path d="M101 131 Q120 160 139 131 Z" fill="#2A2320"/><path d="M104 130 Q120 145 136 130 Z" fill="#FFFFFF"/>
+  <path d="M149 120 L151.5 126 L158 128.5 L151.5 131 L149 137 L146.5 131 L140 128.5 L146.5 126 Z" fill="#FFFFFF"/>
+  <circle cx="139" cy="139" r="2.2" fill="#FFFFFF"/>
+</svg>
+    <h2 id="authTitle">התחברות</h2>
+    <p class="lock-sub" id="authSub"></p>
+    <input type="email" id="authEmail" class="lock-input" placeholder="אימייל" autocomplete="username">
+    <input type="text" id="authRtoken" class="lock-input" placeholder="קוד איפוס" style="display:none">
+    <input type="password" id="authPw1" class="lock-input" placeholder="סיסמה" autocomplete="current-password">
+    <input type="password" id="authPw2" class="lock-input" placeholder="אימות סיסמה" style="display:none">
+    <p class="lock-err" id="authErr"></p>
+    <button class="btn lock-btn" id="authBtn">כניסה</button>
+    <button class="link-btn" id="authForgot" style="display:none">שכחתי סיסמה</button>
+    <button class="link-btn" id="authAlt"></button>
+    <p class="lock-note" id="authNote"></p>
+  </div>
+</div>
+
+<!-- ===== לוח שנה ===== -->
+<div class="overlay hidden" id="calOverlay">
+  <div class="cal-wrap">
+    <div class="cal-top">
+      <button class="nav-btn" id="calPrev" aria-label="חודש קודם">›</button>
+      <h2 id="calTitle"></h2>
+      <button class="nav-btn" id="calNext" aria-label="חודש הבא">‹</button>
+      <button class="cal-close" id="calClose" aria-label="סגירה">✕</button>
+    </div>
+    <p class="cal-hint">הקש על יום ריק כדי לסמן אותו כיום עבודה · הקש על ✎ לעריכה · הקש על יום מסומן כדי למחוק</p>
+    <div class="cal-body">
+      <div class="cal-dow"><span>א׳</span><span>ב׳</span><span>ג׳</span><span>ד׳</span><span>ה׳</span><span>ו׳</span><span>ש׳</span></div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+    <div class="cal-foot">
+      <span class="cal-count" id="calCount"></span>
+      <button class="btn btn-primary" id="calConfirm">אשר עדכון</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== עריכת יום ===== -->
+<div class="overlay hidden" id="editOverlay">
+  <div class="modal">
+    <h3 id="editTitle">עריכת יום</h3>
+    <p class="m-sub" id="editSub"></p>
+    <div class="grid2">
+      <div class="fg"><label for="eStart">שעת התחלה</label><input id="eStart" type="time"></div>
+      <div class="fg"><label for="eEnd">שעת סיום</label><input id="eEnd" type="time"></div>
+      <div class="fg" style="grid-column:1/-1"><label for="eSalary">שכר יומי (₪)</label><input id="eSalary" type="number" inputmode="numeric"></div>
+    </div>
+    <div class="calc">
+      <div class="calc-row"><span class="calc-label">שכר מחושב</span><span class="calc-sum" id="eCalcSum"></span></div>
+      <div class="calc-break" id="eCalcBreak"></div>
+      <div class="calc-note" id="eCalcNote"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="editSave">שמור</button>
+      <button class="btn btn-ghost" id="editCancel">ביטול</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== אישור ===== -->
+<div class="overlay hidden" id="confirmOverlay">
+  <div class="modal">
+    <h3 id="confirmTitle">אישור</h3>
+    <p class="m-sub" id="confirmMsg"></p>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="confirmYes">כן</button>
+      <button class="btn btn-ghost" id="confirmNo">לא</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const HEB_DAYS=["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"];
+const HEB_MONTHS=["ינואר","פברואר","מרץ","אפריל","מאי","יוני","יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר"];
+const BASE_RATE=40, WEEKEND_RATE=60, OT_MULT=1.25, OT_THRESHOLD_H=8;
+const pad=n=>String(n).padStart(2,"0");
+const dstr=(y,m,d)=>`${y}-${pad(m+1)}-${pad(d)}`;   // m 0-based
+const dowOf=ds=>{const[y,m,d]=ds.split("-").map(Number);return new Date(y,m-1,d).getDay();};
+const defaults=dow=> dow===5 ? {start:"15:00",end:"19:00"} : {start:"15:00",end:"23:00"};
+const toMin=t=>{const[h,m]=t.split(":").map(Number);return h*60+m;};
+
+function rateAt(baseDow,absMin){
+  const dow=(baseDow+Math.floor(absMin/1440))%7, mid=absMin%1440;
+  const w=(dow===5&&mid>=16*60)||(dow===6)||(dow===0&&mid<8*60);
+  return w?WEEKEND_RATE:BASE_RATE;
+}
+function computePay(ds,start,end){
+  const baseDow=dowOf(ds);
+  let s=toMin(start),e=toMin(end); if(e<=s)e+=1440;
+  const actualH=(e-s)/60; let fridayExtended=false;
+  if(baseDow===5&&23*60>e){e=23*60;fridayExtended=true;}
+  const otStart=s+OT_THRESHOLD_H*60;
+  let regBase=0,regWk=0,otBase=0,otWk=0,pay=0;
+  for(let t=s;t<e;t++){const rate=rateAt(baseDow,t);const isOT=t>=otStart;
+    pay+=(rate/60)*(isOT?OT_MULT:1);
+    if(isOT){rate===WEEKEND_RATE?otWk++:otBase++;}else{rate===WEEKEND_RATE?regWk++:regBase++;}}
+  return {salary:Math.round(pay),actualH,paidH:(e-s)/60,fridayExtended,
+    regBaseH:regBase/60,regWkH:regWk/60,otBaseH:otBase/60,otWkH:otWk/60};
+}
+const fmtMoney=n=>Number(n||0).toLocaleString("he-IL");
+const fmtHours=n=>{const v=Number(n||0);return Number.isInteger(v)?String(v):v.toFixed(2).replace(/\.?0+$/,"");};
+const prettyDate=d=>{const p=d.split("-");return p[2]+"."+p[1]+"."+p[0];};
+const dowClass=dow=>dow===6?"dow-sat":dow===5?"dow-fri":"";
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function breakdownText(r){const p=[];
+  if(r.regBaseH)p.push(fmtHours(r.regBaseH)+"×40");
+  if(r.regWkH)p.push(fmtHours(r.regWkH)+"×60");
+  if(r.otBaseH)p.push(fmtHours(r.otBaseH)+"×50 נוספות");
+  if(r.otWkH)p.push(fmtHours(r.otWkH)+"×75 נוספות");
+  return p.join(" + ");}
+
+/* ===== חיבור לשרת (API) — הנתונים נשמרים בענן מאחורי התחברות ===== */
+// כתובת השרת. לפיתוח מקומי: localhost. אחרי פריסה — לשנות לכתובת בענן.
+const API = "/api";  // אותו מקור כמו האתר — עובד מקומית ובענן
+const TOKEN_KEY = "auth-token";
+let token = localStorage.getItem(TOKEN_KEY) || null;
+
+async function api(path, opts={}){
+  const headers = {"Content-Type":"application/json", ...(opts.headers||{})};
+  if(token) headers["Authorization"] = "Bearer "+token;
+  const res = await fetch(API+path, {...opts, headers});
+  if(res.status===401){ token=null; localStorage.removeItem(TOKEN_KEY); showAuth("login"); throw new Error("unauthorized"); }
+  const data = await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(data.error || "שגיאת שרת");
+  return data;
+}
+// פעולות שרת על ימי עבודה
+async function fetchEntries(){ entries = await api("/workdays"); }
+function upsertDay(d){ return api("/workdays",{method:"POST",body:JSON.stringify(d)}); }
+function deleteDay(date){ return api("/workdays/"+date,{method:"DELETE"}); }
+
+let entries=[];
+let selectedKey=null;
+let calYear,calMonth,draftMap={};
+let pendingYes=null, editing=null, editContext="cal";
+
+const $=id=>document.getElementById(id);
+const contentEl=$("content"),grandEl=$("grand"),grandValEl=$("grandVal"),toastEl=$("toast");
+const calOverlay=$("calOverlay"),calGrid=$("calGrid"),calTitle=$("calTitle"),calCount=$("calCount");
+const editOverlay=$("editOverlay"),eStart=$("eStart"),eEnd=$("eEnd"),eSalary=$("eSalary"),
+  eCalcSum=$("eCalcSum"),eCalcBreak=$("eCalcBreak"),eCalcNote=$("eCalcNote"),editSub=$("editSub"),editTitle=$("editTitle");
+const confirmOverlay=$("confirmOverlay"),confirmMsg=$("confirmMsg"),confirmTitle=$("confirmTitle");
+
+let toastTimer=null;
+function toast(m){toastEl.textContent=m;toastEl.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.remove("show"),2200);}
+function askConfirm(title,msg,onYes){confirmTitle.textContent=title;confirmMsg.textContent=msg;pendingYes=onYes;confirmOverlay.classList.remove("hidden");}
+
+/* ---------- לוח שנה ---------- */
+function openCalendar(){
+  draftMap={}; for(const e of entries) draftMap[e.date]={...e};
+  const base = selectedKey ? {y:+selectedKey.slice(0,4),m:+selectedKey.slice(5,7)-1} : {y:new Date().getFullYear(),m:new Date().getMonth()};
+  calYear=base.y; calMonth=base.m;
+  renderCal(); calOverlay.classList.remove("hidden");
+}
+function renderCal(){
+  calTitle.textContent=HEB_MONTHS[calMonth]+" "+calYear;
+  const first=new Date(calYear,calMonth,1).getDay();
+  const days=new Date(calYear,calMonth+1,0).getDate();
+  let html="";
+  for(let i=0;i<first;i++) html+='<div class="cell blank"></div>';
+  for(let d=1;d<=days;d++){
+    const ds=dstr(calYear,calMonth,d), dow=dowOf(ds), dc=dowClass(dow), ent=draftMap[ds];
+    if(ent){
+      html+=`<div class="cell worked ${dc}" data-date="${ds}">
+        <button class="cell-edit" data-edit="${ds}" aria-label="עריכה">✎</button>
+        <span class="cell-num">${d}</span>
+        <span class="cell-check">✓</span>
+        <span class="cell-pay">${fmtMoney(ent.salary)}₪</span></div>`;
+    }else{
+      html+=`<div class="cell empty ${dc}" data-date="${ds}"><span class="cell-num">${d}</span></div>`;
+    }
+  }
+  calGrid.innerHTML=html;
+  const n=Object.keys(draftMap).length;
+  calCount.innerHTML=`סה״כ מסומנים: <b>${n}</b> ימים`;
+}
+function addDay(ds){
+  const dow=dowOf(ds), def=defaults(dow), r=computePay(ds,def.start,def.end);
+  draftMap[ds]={id:ds,date:ds,dow,dayName:HEB_DAYS[dow],start:def.start,end:def.end,salary:r.salary};
+}
+function hasChanges(){
+  const a=JSON.stringify(Object.values(draftMap).sort((x,y)=>x.date.localeCompare(y.date)));
+  const b=JSON.stringify([...entries].sort((x,y)=>x.date.localeCompare(y.date)));
+  return a!==b;
+}
+function closeCalendar(){
+  if(hasChanges()){
+    askConfirm("יציאה","לצאת בלי לשמור את השינויים?",()=>{calOverlay.classList.add("hidden");});
+  }else calOverlay.classList.add("hidden");
+}
+async function confirmUpdate(){
+  const orig={}; for(const e of entries) orig[e.date]=e;
+  const jobs=[];
+  for(const ds in draftMap){
+    const d=draftMap[ds], o=orig[ds];
+    if(!o || o.start!==d.start || o.end!==d.end || Number(o.salary)!==Number(d.salary))
+      jobs.push(upsertDay({date:d.date,start:d.start,end:d.end,salary:d.salary}));
+  }
+  for(const ds in orig){ if(!draftMap[ds]) jobs.push(deleteDay(ds)); }
+  $("calConfirm").disabled=true;
+  try{
+    await Promise.all(jobs);
+    await fetchEntries();
+    selectedKey=`${calYear}-${pad(calMonth+1)}`;
+    calOverlay.classList.add("hidden");
+    render(); toast("העדכון נשמר");
+  }catch(e){ toast(e.message==="unauthorized"?"נדרשת התחברות מחדש":"שגיאה בשמירה"); }
+  finally{ $("calConfirm").disabled=false; }
+}
+
+calGrid.addEventListener("click",e=>{
+  const eb=e.target.closest(".cell-edit");
+  if(eb){ openEditor(eb.dataset.edit,"cal"); return; }
+  const cell=e.target.closest(".cell");
+  if(!cell||cell.classList.contains("blank")) return;
+  const ds=cell.dataset.date;
+  if(draftMap[ds]){
+    askConfirm("מחיקת יום","האם אתה בטוח שברצונך למחוק את יום העבודה בתאריך "+prettyDate(ds)+"?",()=>{delete draftMap[ds];renderCal();});
+  }else{ addDay(ds); renderCal(); }
+});
+$("openCal").addEventListener("click",openCalendar);
+$("calClose").addEventListener("click",closeCalendar);
+$("calConfirm").addEventListener("click",confirmUpdate);
+$("calPrev").addEventListener("click",()=>{calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCal();});
+$("calNext").addEventListener("click",()=>{calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCal();});
+
+/* ---------- עריכת יום ---------- */
+function openEditor(ds,ctx){
+  editContext=ctx||"cal"; editing=ds;
+  const ent = editContext==="list" ? entries.find(e=>e.date===ds) : draftMap[ds];
+  if(!ent) return;
+  editTitle.textContent="עריכת יום "+ent.dayName;
+  editSub.textContent=prettyDate(ds);
+  eStart.value=ent.start; eEnd.value=ent.end; eSalary.value=ent.salary;
+  editRecompute(false);
+  editOverlay.classList.remove("hidden");
+}
+function editRecompute(setSalary){
+  const r=computePay(editing,eStart.value,eEnd.value);
+  if(setSalary) eSalary.value=r.salary;
+  eCalcSum.innerHTML=fmtMoney(setSalary?r.salary:(Number(eSalary.value)||0))+' <em>₪</em>';
+  eCalcBreak.textContent=breakdownText(r);
+  eCalcNote.textContent=r.fridayExtended?("משמרת עד "+eEnd.value+" · שכר משולם עד 23:00 ("+fmtHours(r.paidH)+" שע׳)"):"";
+}
+eStart.addEventListener("input",()=>editRecompute(true));
+eEnd.addEventListener("input",()=>editRecompute(true));
+eSalary.addEventListener("input",()=>editRecompute(false));
+$("editSave").addEventListener("click",async()=>{
+  const start=eStart.value, end=eEnd.value, salary=Number(eSalary.value)||0;
+  if(editContext==="list"){
+    try{
+      await upsertDay({date:editing,start,end,salary});
+      await fetchEntries();
+      editOverlay.classList.add("hidden"); render(); toast("היום עודכן");
+    }catch(e){ toast("שגיאה בשמירה"); }
+  }else{
+    draftMap[editing]={...draftMap[editing],start,end,salary};
+    editOverlay.classList.add("hidden"); renderCal();
+  }
+});
+$("editCancel").addEventListener("click",()=>editOverlay.classList.add("hidden"));
+
+/* ---------- אישור כללי ---------- */
+$("confirmYes").addEventListener("click",()=>{confirmOverlay.classList.add("hidden");const f=pendingYes;pendingYes=null;if(f)f();});
+$("confirmNo").addEventListener("click",()=>{confirmOverlay.classList.add("hidden");pendingYes=null;});
+
+/* ---------- תצוגת חודשים ---------- */
+function groupByMonth(){
+  const map={}; for(const e of entries){const k=e.date.slice(0,7);(map[k]=map[k]||[]).push(e);}
+  return Object.keys(map).map(key=>{
+    const items=map[key].slice().sort((a,b)=>a.date.localeCompare(b.date));
+    return {key,year:key.slice(0,4),monthIdx:+key.slice(5,7)-1,items,total:items.reduce((s,e)=>s+Number(e.salary),0)};
+  }).sort((a,b)=>b.key.localeCompare(a.key));
+}
+function render(){
+  const grand=entries.reduce((s,e)=>s+Number(e.salary),0);
+  if(entries.length){grandEl.style.display="flex";grandValEl.innerHTML=fmtMoney(grand)+' <em>₪</em>';}
+  else grandEl.style.display="none";
+  if(entries.length===0){
+    contentEl.innerHTML='<div class="card empty-state"><p>עדיין לא הזנת ימי עבודה.</p><p class="empty-sub">הקש על «הכנס יום עבודה» כדי לפתוח את לוח השנה.</p></div>';
+    return;
+  }
+  const groups=groupByMonth();
+  if(!groups.some(g=>g.key===selectedKey)) selectedKey=groups[0].key;
+  const g=groups.find(x=>x.key===selectedKey);
+  const tabs=groups.map(x=>`<button class="tab ${x.key===selectedKey?"active":""}" data-key="${x.key}">${HEB_MONTHS[x.monthIdx]} ${x.year}</button>`).join("");
+  const rows=g.items.map(e=>{const dc=e.dow===6?"sat":e.dow===5?"fri":"";
+    return `<tr><td class="td-date">${prettyDate(e.date).slice(0,5)}</td>
+      <td class="td-day ${dc}">${esc(e.dayName)}</td>
+      <td class="td-shift">${e.start}–${e.end}</td>
+      <td class="td-salary">${fmtMoney(e.salary)} ₪</td>
+      <td class="td-actions"><button class="row-edit" data-edit="${e.date}" aria-label="עריכת יום">✎</button></td></tr>`;}).join("");
+  contentEl.innerHTML=`
+    <div class="tabs">${tabs}</div>
+    <section class="card">
+      <div class="panel-head">
+        <div class="panel-title"><h2>${HEB_MONTHS[g.monthIdx]} <span>${g.year}</span></h2>
+          <div class="panel-meta">${g.items.length} ימי עבודה</div></div>
+        <div class="panel-total"><span class="pt-label">סה״כ החודש</span>
+          <span class="pt-val">${fmtMoney(g.total)} <em>₪</em></span></div>
+      </div>
+      <table class="tbl">
+        <thead><tr><th>תאריך</th><th>יום</th><th>משמרת</th><th>שכר</th><th></th></tr></thead>
+        <tbody>${rows}</tbody>
+        <tfoot><tr><td colspan="3" class="tfoot-label">סה״כ ${g.items.length} ימים</td>
+          <td class="td-salary">${fmtMoney(g.total)} ₪</td><td></td></tr></tfoot>
+      </table>
+    </section>`;
+  contentEl.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{selectedKey=b.dataset.key;render();}));
+  contentEl.querySelectorAll(".row-edit").forEach(b=>b.addEventListener("click",()=>openEditor(b.dataset.edit,"list")));
+}
+
+/* ---------- גיבוי / שחזור ---------- */
+$("exportBtn").addEventListener("click",()=>{
+  if(!entries.length){toast("אין נתונים לגיבוי");return;}
+  const blob=new Blob([JSON.stringify(entries,null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="salary-backup-"+new Date().toISOString().slice(0,10)+".json";
+  a.click(); URL.revokeObjectURL(a.href);
+  toast("הגיבוי נשמר");
+});
+$("importBtn").addEventListener("click",()=>$("importFile").click());
+$("importFile").addEventListener("change",e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=async()=>{
+    try{
+      const arr=JSON.parse(rd.result);
+      if(!Array.isArray(arr)) throw 0;
+      const jobs=[];
+      for(const x of arr){ if(x&&x.date)
+        jobs.push(upsertDay({date:x.date,start:x.start||"15:00",end:x.end||"23:00",salary:Number(x.salary)||0})); }
+      await Promise.all(jobs); await fetchEntries();
+      render(); toast("השחזור הושלם");
+    }catch(err){ toast("קובץ גיבוי לא תקין או שגיאת שרת"); }
+    finally{ e.target.value=""; }
+  };
+  rd.readAsText(f);
+});
+
+/* ---------- התחברות / הרשמה / שחזור סיסמה ---------- */
+const authOverlay=$("authOverlay"),authTitle=$("authTitle"),authSub=$("authSub"),
+  authEmail=$("authEmail"),authPw1=$("authPw1"),authPw2=$("authPw2"),authRtoken=$("authRtoken"),
+  authErr=$("authErr"),authBtn=$("authBtn"),authAlt=$("authAlt"),authForgot=$("authForgot"),
+  authNote=$("authNote"),bannerEl=$("banner");
+let authMode="login";
+
+function showAuth(mode){
+  authMode=mode; authErr.textContent="";
+  authPw1.value=""; authPw2.value=""; authRtoken.value="";
+  $("logoutBtn").style.display="none";
+  const show=(el,on)=>el.style.display=on?"block":"none";
+  const M={
+    login:{t:"התחברות",s:"היכנס עם האימייל והסיסמה שלך.",email:1,rtoken:0,pw1:1,pw2:0,b:"כניסה",alt:"אין לך חשבון? הרשמה",forgot:1,n:""},
+    register:{t:"הרשמה",s:"פתח חשבון חדש עם אימייל וסיסמה.",email:1,rtoken:0,pw1:1,pw2:1,b:"צור חשבון",alt:"כבר יש חשבון? התחברות",forgot:0,n:"הסיסמה נשמרת מוצפנת (hash) ולא כטקסט גלוי."},
+    forgot:{t:"שחזור סיסמה",s:"הזן את האימייל שלך לקבלת קוד איפוס.",email:1,rtoken:0,pw1:0,pw2:0,b:"שלח קוד איפוס",alt:"חזרה להתחברות",forgot:0,n:""},
+    reset:{t:"סיסמה חדשה",s:"הזן את קוד האיפוס וקבע סיסמה חדשה.",email:0,rtoken:1,pw1:1,pw2:1,b:"עדכן סיסמה",alt:"חזרה להתחברות",forgot:0,n:""}
+  }[mode];
+  authTitle.textContent=M.t; authSub.textContent=M.s;
+  show(authEmail,M.email); show(authRtoken,M.rtoken); show(authPw1,M.pw1); show(authPw2,M.pw2);
+  authBtn.textContent=M.b; authAlt.textContent=M.alt;
+  authForgot.style.display=M.forgot?"block":"none";
+  authNote.textContent=M.n;
+  authOverlay.classList.remove("hidden");
+  setTimeout(()=>{(M.email?authEmail:authRtoken).focus?.();},50);
+}
+function loadApp(){
+  authOverlay.classList.add("hidden");
+  $("logoutBtn").style.display="inline-flex";
+  render();
+}
+function setToken(t){ token=t; localStorage.setItem(TOKEN_KEY,t); }
+
+authAlt.addEventListener("click",()=>{
+  showAuth(authMode==="login"?"register":"login");
+});
+authForgot.addEventListener("click",()=>showAuth("forgot"));
+
+authBtn.addEventListener("click",async()=>{
+  authErr.textContent="";
+  const email=authEmail.value.trim(), p1=authPw1.value, p2=authPw2.value, rt=authRtoken.value.trim();
+  authBtn.disabled=true;
+  try{
+    if(authMode==="login"){
+      const d=await api("/auth/login",{method:"POST",body:JSON.stringify({email,password:p1})});
+      setToken(d.token); await fetchEntries(); loadApp();
+    }else if(authMode==="register"){
+      if(p1.length<6){ authErr.textContent="הסיסמה חייבת 6 תווים לפחות"; return; }
+      if(p1!==p2){ authErr.textContent="הסיסמאות אינן תואמות"; return; }
+      const d=await api("/auth/register",{method:"POST",body:JSON.stringify({email,password:p1})});
+      setToken(d.token); await fetchEntries(); loadApp(); toast("החשבון נוצר");
+    }else if(authMode==="forgot"){
+      const d=await api("/auth/forgot-password",{method:"POST",body:JSON.stringify({email})});
+      showAuth("reset");
+      if(d.devToken){ authRtoken.value=d.devToken; authNote.textContent="מצב פיתוח: קוד האיפוס מולא אוטומטית."; }
+      else authNote.textContent="אם האימייל רשום, נשלח אליו קוד איפוס.";
+    }else if(authMode==="reset"){
+      if(p1.length<6){ authErr.textContent="הסיסמה חייבת 6 תווים לפחות"; return; }
+      if(p1!==p2){ authErr.textContent="הסיסמאות אינן תואמות"; return; }
+      await api("/auth/reset-password",{method:"POST",body:JSON.stringify({token:rt,password:p1})});
+      showAuth("login"); toast("הסיסמה עודכנה, אפשר להתחבר");
+    }
+  }catch(e){
+    authErr.textContent = e.message==="unauthorized" ? "אימייל או סיסמה שגויים"
+      : (e.message==="Failed to fetch" ? "אין חיבור לשרת. ודא שהשרת רץ." : e.message);
+  }finally{ authBtn.disabled=false; }
+});
+[authEmail,authRtoken,authPw1,authPw2].forEach(inp=>inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();authBtn.click();}}));
+
+$("logoutBtn").addEventListener("click",()=>{
+  token=null; localStorage.removeItem(TOKEN_KEY); entries=[];
+  contentEl.innerHTML=""; grandEl.style.display="none";
+  showAuth("login");
+});
+
+function showBanner(msg){bannerEl.textContent=msg;bannerEl.classList.remove("hidden");}
+
+async function init(){
+  if(!token){ showAuth("login"); return; }
+  try{ await fetchEntries(); loadApp(); }
+  catch(e){
+    if(e.message==="unauthorized"){ showAuth("login"); }
+    else { showAuth("login"); authErr.textContent="אין חיבור לשרת. ודא שהשרת רץ על "+API.replace("/api",""); }
+  }
+}
+init();
+</script>
+</body>
+</html>

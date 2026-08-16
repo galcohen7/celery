@@ -1,0 +1,41 @@
+// מסד הנתונים — PostgreSQL בענן. לפיתוח מקומי אפשר להחליף provider ל-"sqlite"
+// ו-DATABASE_URL ל-"file:./dev.db".
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int                  @id @default(autoincrement())
+  email        String               @unique
+  passwordHash String
+  createdAt    DateTime             @default(now())
+  workdays     WorkDay[]
+  resetTokens  PasswordResetToken[]
+}
+
+model WorkDay {
+  id     Int    @id @default(autoincrement())
+  userId Int
+  date   String // 'YYYY-MM-DD'
+  dow    Int    // 0=ראשון ... 6=שבת
+  start  String // 'HH:MM'
+  end    String // 'HH:MM'
+  salary Int
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+}
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  tokenHash String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
