@@ -8,20 +8,21 @@ Render מושך את הקוד מ-GitHub, אז הסדר הוא: (1) להעלות 
 
 ## שלב 1 — להעלות את הקוד ל-GitHub
 
-1. ב-GitHub לחץ **New repository**, תן שם (למשל `salary-expense`), השאר אותו **Private**, ואל תסמן שום קובץ נוסף. לחץ **Create**.
+> ה-repo המקומי כבר אותחל בתוך `server/`, הקבצים כבר ב-commit הראשון, והענף הוא `main`.
+> נשאר רק ליצור repo ב-GitHub ולחבר אליו.
 
-2. במחשב, בתוך תיקיית `server`, פתח טרמינל והרץ:
+1. ב-GitHub לחץ **New repository**, תן שם (למשל `celery`), השאר אותו **Private**,
+   ו**אל תסמן** אף אחת מהאפשרויות "Add a README" / "Add .gitignore" / "Choose a license" —
+   סימון שלהן ייצור commit בצד השרת והדחיפה תידחה. לחץ **Create repository**.
+
+2. במחשב, בתוך תיקיית `server`, הרץ (עם שם המשתמש ושם ה-repo שלך):
 
 ```bash
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin https://github.com/<שם-המשתמש-שלך>/salary-expense.git
+git remote add origin https://github.com/<שם-המשתמש-שלך>/celery.git
 git push -u origin main
 ```
 
-(אם זו הפעם הראשונה עם git, ייתכן שתתבקש להזדהות מול GitHub.)
+(אם זו הפעם הראשונה עם git במחשב הזה, ייפתח חלון להזדהות מול GitHub.)
 
 ---
 
@@ -33,7 +34,7 @@ git push -u origin main
 
 3. חבר את חשבון GitHub ובחר את ה-repository שיצרת. Render יזהה אוטומטית את הקובץ `render.yaml` שכבר נמצא בפרויקט.
 
-4. Render יציג לך שהוא עומד ליצור **שני דברים**: שירות ווב (`salary-expense-server`) ומסד נתונים (`salary-expense-db`). לחץ **Apply**.
+4. Render יציג לך שהוא עומד ליצור **שני דברים**: שירות ווב (`celery-app`) ומסד נתונים (`celery-db`). לחץ **Apply**.
 
 5. Render יבנה ויפרוס הכל אוטומטית — התקנת החבילות, יצירת מסד הנתונים, ובניית הטבלאות. זה לוקח כמה דקות בפעם הראשונה.
 
@@ -46,7 +47,7 @@ git push -u origin main
 כשהבנייה מסתיימת (סטטוס ירוק), Render ייתן לך כתובת בסגנון:
 
 ```
-https://salary-expense-server.onrender.com
+https://celery-app.onrender.com
 ```
 
 היכנס לכתובת הזו בדפדפן — האפליקציה תיפתח. הירשם עם אימייל וסיסמה, והתחל להזין ימים. הכל נשמר בענן ומחכה לך בכל מכשיר.
