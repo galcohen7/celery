@@ -40,7 +40,26 @@ const run = (args) =>
   });
 
 run(["db", "push", `--schema=${target}`, "--skip-generate"]);
-run(["generate", `--schema=${target}`]);
+
+// generate מחליף את ה-DLL של מנוע Prisma. אם שרת פיתוח רץ הוא מחזיק את
+// הקובץ ווינדוס מחזיר EPERM — שגיאה שנראית מסתורית אבל הסיבה שלה פשוטה.
+try {
+  run(["generate", `--schema=${target}`]);
+} catch (err) {
+  const msg = String(err.stderr || err.message || "");
+  if (/EPERM|EBUSY/i.test(msg) || err.status) {
+    console.error(
+      "\n──────────────────────────────────────────────\n" +
+        "יצירת ה-Prisma client נכשלה כי קובץ המנוע נעול.\n" +
+        "כמעט תמיד הסיבה: שרת פיתוח רץ ברקע ומחזיק אותו.\n\n" +
+        "עצור אותו (Ctrl+C בטרמינל שלו, או Get-Process node | Stop-Process -Force),\n" +
+        "הרץ שוב `npm run setup:local`, ואז `npm run dev`.\n" +
+        "──────────────────────────────────────────────\n"
+    );
+    process.exit(1);
+  }
+  throw err;
+}
 
 // .env לפיתוח מקומי — נוצר פעם אחת עם סוד אקראי. מוחרג ב-.gitignore.
 const envFile = path.join(serverDir, ".env");

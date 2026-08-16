@@ -82,6 +82,39 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo',system-u
 .danger-link{background:none;border:none;color:var(--danger);font-family:'Heebo',sans-serif;
   font-size:13px;cursor:pointer;margin-top:10px;padding:4px;width:100%;text-decoration:underline;}
 
+/* ===== מסמכים ===== */
+.doc-types{display:flex;gap:8px;margin-bottom:14px;}
+.doc-type{flex:1;padding:13px 10px;border-radius:12px;border:1.5px solid var(--line);
+  background:#fff;cursor:pointer;text-align:center;transition:all .15s;font-family:'Heebo',sans-serif;}
+.doc-type:hover{border-color:var(--indigo);}
+.doc-type.active{border-color:var(--indigo);background:var(--indigo-soft);}
+.doc-type b{display:block;font-family:'Rubik',sans-serif;font-size:14.5px;color:var(--ink);margin-bottom:2px;}
+.doc-type span{font-size:11.5px;color:var(--muted);}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:26px 16px;text-align:center;
+  cursor:pointer;transition:border-color .15s,background .15s;}
+.drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft);}
+.drop-icon{font-size:30px;line-height:1;}
+.drop p{margin:8px 0 0;font-size:14px;}
+.drop small{color:var(--muted);font-size:12px;}
+.privacy-note{margin-top:12px;font-size:12px;color:var(--accent-deep);
+  background:var(--accent-soft);border-radius:10px;padding:9px 12px;text-align:center;}
+.spinner{display:inline-block;width:15px;height:15px;border:2px solid var(--line);
+  border-top-color:var(--indigo);border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.alert{border-radius:11px;padding:10px 13px;margin-bottom:8px;font-size:13px;border-inline-start:3px solid;}
+.alert-חריג{background:#FBEDEC;border-color:var(--danger);color:#7A2F29;}
+.alert-לבדיקה{background:#F1EBCF;border-color:#B8933D;color:#6B5417;}
+.alert b{display:block;font-size:12px;margin-bottom:2px;opacity:.75;}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px;}
+.kv:last-child{border-bottom:none;}
+.kv span:last-child{font-family:'Rubik',sans-serif;font-weight:600;}
+.kv .diff{font-size:12px;color:var(--muted);font-weight:400;}
+.sum-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.pill{font-size:12.5px;padding:6px 12px;border-radius:99px;font-weight:500;}
+.pill-ok{background:var(--green-soft);color:#2F6B44;}
+.pill-review{background:#F1EBCF;color:#6B5417;}
+.pill-anomaly{background:#FBEDEC;color:#7A2F29;}
+
 .tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;scrollbar-width:thin;}
 .tab{flex:0 0 auto;font-family:'Heebo',sans-serif;font-size:13.5px;font-weight:500;
   padding:8px 15px;border-radius:99px;border:1.5px solid var(--line);background:#fff;
@@ -296,6 +329,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo',system-u
   <div class="views" id="views">
     <button class="view-btn active" data-view="salary">שכר</button>
     <button class="view-btn" data-view="expenses">הוצאות</button>
+    <button class="view-btn" data-view="documents">מסמכים</button>
   </div>
 
   <button class="add-btn" id="openCal"><span class="plus">＋</span> הכנס יום עבודה</button>
@@ -659,7 +693,11 @@ function groupByMonth(){
 }
 // מפזר לתצוגה הפעילה. כל הקוראים הקיימים (שמירה, ייבוא, טאבים) ממשיכים
 // לקרוא ל-render() ולא צריכים לדעת באיזו תצוגה אנחנו.
-function render(){ view==="salary" ? renderSalary() : renderExpenses(); }
+function render(){
+  if(view==="salary") return renderSalary();
+  if(view==="expenses") return renderExpenses();
+  return renderDocuments();
+}
 
 function renderSalary(){
   $("grandLabel").textContent="סה״כ נצבר";
@@ -778,6 +816,185 @@ function renderExpenses(){
     </section>`;
   contentEl.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{expSelectedKey=b.dataset.key;render();}));
   contentEl.querySelectorAll(".row-edit").forEach(b=>b.addEventListener("click",()=>openExpense(+b.dataset.exp)));
+}
+
+/* ---------- תצוגת מסמכים ---------- */
+let docType="payslip", docBusy=false, docDraft=null, aiStatus=null, payslipHistory=[];
+
+async function fetchDocStatus(){ try{ aiStatus=await api("/documents/status"); }catch(e){ aiStatus={aiConfigured:false}; } }
+async function fetchPayslips(){ try{ payslipHistory=await api("/documents/payslips"); }catch(e){ payslipHistory=[]; } }
+
+function renderDocuments(){
+  $("grandLabel").textContent="";
+  grandEl.style.display="none";
+  const thisMonth=new Date().toISOString().slice(0,7);
+
+  const warn = aiStatus && !aiStatus.aiConfigured
+    ? `<div class="alert alert-לבדיקה"><b>שירות ה-AI אינו מוגדר</b>
+         נדרש מפתח ANTHROPIC_API_KEY בסביבת השרת. אפשר להעלות מסמך רק אחרי שהוא יוגדר.</div>`
+    : "";
+
+  const history = payslipHistory.length
+    ? `<section class="card" style="margin-top:16px">
+        <div class="panel-head"><div class="panel-title"><h2>תלושים שנבדקו</h2>
+          <div class="panel-meta">${payslipHistory.length} חודשים</div></div></div>
+        ${payslipHistory.map(p=>`<div class="kv">
+            <span>${p.month}</span>
+            <span>${p.grossAgorot!=null?fmtAg(p.grossAgorot)+" ₪ ברוטו":"—"}
+              ${p.alerts.length?`<span class="diff"> · ${p.alerts.length} התראות</span>`:""}</span>
+          </div>`).join("")}
+       </section>`
+    : "";
+
+  contentEl.innerHTML=`
+    ${warn}
+    <section class="card">
+      <div class="doc-types">
+        <button class="doc-type ${docType==="payslip"?"active":""}" data-doc="payslip">
+          <b>תלוש שכר</b><span>הצלבה מול היומן</span></button>
+        <button class="doc-type ${docType==="statement"?"active":""}" data-doc="statement">
+          <b>דוח עו״ש</b><span>הצלבה מול ההוצאות</span></button>
+      </div>
+      ${docType==="payslip"?`<div class="fg" style="margin-bottom:12px">
+        <label for="docMonth">חודש התלוש</label>
+        <input id="docMonth" type="month" value="${thisMonth}" style="width:100%;font-family:'Heebo',sans-serif;font-size:15px;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;">
+      </div>`:""}
+      <div class="drop" id="drop">
+        <div class="drop-icon">⭱</div>
+        <p>הקש לבחירת קובץ, או גרור לכאן</p>
+        <small>PDF, PNG, JPG או WEBP · עד 20MB</small>
+      </div>
+      <input type="file" id="docFile" accept="application/pdf,image/png,image/jpeg,image/webp" hidden>
+      <div class="privacy-note">🔒 המסמך מנותח ונמחק מיד. הוא לא נשמר בשרת ולא במסד הנתונים —
+        רק התוצאות שתאשר יישמרו.</div>
+      <div id="docResult"></div>
+    </section>
+    ${history}`;
+
+  contentEl.querySelectorAll(".doc-type").forEach(b=>b.addEventListener("click",()=>{
+    docType=b.dataset.doc; docDraft=null; render();
+  }));
+  const drop=$("drop"), file=$("docFile");
+  drop.addEventListener("click",()=>file.click());
+  drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("over");});
+  drop.addEventListener("dragleave",()=>drop.classList.remove("over"));
+  drop.addEventListener("drop",e=>{
+    e.preventDefault(); drop.classList.remove("over");
+    if(e.dataTransfer.files[0]) uploadDoc(e.dataTransfer.files[0]);
+  });
+  file.addEventListener("change",e=>{ if(e.target.files[0]) uploadDoc(e.target.files[0]); e.target.value=""; });
+
+  if(docDraft) renderDraft();
+}
+
+async function uploadDoc(f){
+  if(docBusy) return;
+  docBusy=true; docDraft=null;
+  const month = $("docMonth") ? $("docMonth").value : null;
+  $("docResult").innerHTML=`<div class="privacy-note" style="background:var(--indigo-soft);color:var(--indigo)">
+    <span class="spinner"></span> מנתח את המסמך… זה עשוי לקחת עד דקה.</div>`;
+  try{
+    const fd=new FormData();
+    fd.append("file",f);
+    if(month) fd.append("month",month);
+    // בלי Content-Type — הדפדפן מוסיף אותו עם ה-boundary הנכון
+    const res=await fetch(API+"/documents/"+(docType==="payslip"?"payslip":"statement"),
+      {method:"POST",headers:{Authorization:"Bearer "+token},body:fd});
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(data.error||"ניתוח המסמך נכשל");
+    docDraft=data; renderDraft();
+  }catch(e){
+    $("docResult").innerHTML=`<div class="alert alert-חריג"><b>שגיאה</b>${esc(e.message)}</div>`;
+  }finally{ docBusy=false; }
+}
+
+function renderDraft(){
+  const el=$("docResult"); if(!el||!docDraft) return;
+  el.innerHTML = docType==="payslip" ? payslipDraftHtml(docDraft) : statementDraftHtml(docDraft);
+  const confirm=$("docConfirm"), discard=$("docDiscard");
+  if(discard) discard.addEventListener("click",()=>{docDraft=null;render();});
+  if(confirm) confirm.addEventListener("click",async()=>{
+    confirm.disabled=true;
+    try{
+      if(docType==="payslip"){
+        await api("/documents/payslip/confirm",{method:"POST",body:JSON.stringify(
+          {month:docDraft.month,extracted:docDraft.extracted,comparison:docDraft.comparison})});
+        await fetchPayslips();
+      }else{
+        await api("/documents/statement/confirm",{method:"POST",body:JSON.stringify(
+          {results:docDraft.results,createExpenses:[]})});
+      }
+      docDraft=null; render(); toast("התוצאות נשמרו");
+    }catch(e){ toast("שגיאה בשמירה"); confirm.disabled=false; }
+  });
+}
+
+const money=v=>v==null?"—":fmtAg(v)+" ₪";
+function payslipDraftHtml(d){
+  const x=d.extracted, c=d.comparison, dd=x.deductions||{};
+  const sh=v=>v==null?"—":Number(v).toLocaleString("he-IL",{maximumFractionDigits:2})+" ₪";
+  return `<div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line)">
+    <h3 style="font-family:'Rubik';font-size:15px;margin:0 0 10px">פרטי התלוש · ${esc(d.month)}</h3>
+    <div class="kv"><span>ברוטו מדווח</span><span>${sh(x.grossShekels)}</span></div>
+    <div class="kv"><span>נטו מדווח</span><span>${sh(x.netShekels)}</span></div>
+    ${x.employerName?`<div class="kv"><span>מעסיק</span><span>${esc(x.employerName)}</span></div>`:""}
+
+    <h3 style="font-family:'Rubik';font-size:15px;margin:16px 0 10px">הצלבה מול היומן</h3>
+    <div class="kv"><span>ימים</span><span>${x.daysReported??"—"} <span class="diff">ביומן ${c.journal.days}</span></span></div>
+    <div class="kv"><span>שעות</span><span>${x.hoursReported??"—"} <span class="diff">ביומן ${c.journal.hours}</span></span></div>
+    <div class="kv"><span>ברוטו צפוי לפי היומן</span><span>${money(c.journal.grossAgorot)}</span></div>
+
+    <h3 style="font-family:'Rubik';font-size:15px;margin:16px 0 10px">ניכויים מדווחים</h3>
+    <div class="kv"><span>מס הכנסה</span><span>${sh(dd.incomeTax)}</span></div>
+    <div class="kv"><span>ביטוח לאומי</span><span>${sh(dd.nationalInsurance)}</span></div>
+    <div class="kv"><span>מס בריאות</span><span>${sh(dd.healthTax)}</span></div>
+    <div class="kv"><span>פנסיה</span><span>${sh(dd.pension)}</span></div>
+    <div class="kv"><span>אחר</span><span>${sh(dd.other)}</span></div>
+    <p style="font-size:12px;color:var(--muted);margin:8px 0 0">
+      אימות הניכויים מול מנוע המס יתווסף בשלב הבא. כרגע מוצג מה שכתוב בתלוש בלבד.</p>
+
+    ${c.alerts.length?`<h3 style="font-family:'Rubik';font-size:15px;margin:16px 0 10px">ממצאים</h3>
+      ${c.alerts.map(a=>`<div class="alert alert-${a.level}"><b>${esc(a.level)} · ${esc(a.field)}</b>${esc(a.message)}</div>`).join("")}`
+      :`<div class="alert" style="background:var(--green-soft);border-color:var(--green);color:#2F6B44;margin-top:16px">
+         <b>לא נמצאו פערים</b>הנתונים בתלוש תואמים את היומן בטווח הסביר.</div>`}
+
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="docConfirm">אשר ושמור</button>
+      <button class="btn btn-ghost" id="docDiscard">בטל</button>
+    </div>
+    <p style="font-size:11.5px;color:var(--muted);text-align:center;margin:10px 0 0">
+      ${esc(d.note||"")}</p>
+  </div>`;
+}
+
+function statementDraftHtml(d){
+  const s=d.summary;
+  const row=r=>`<tr>
+    <td class="td-date">${prettyDate(r.line.date).slice(0,5)}</td>
+    <td><div class="td-desc">${esc(r.line.merchantRaw)}</div>
+      ${r.alertReason?`<div class="td-merchant">${esc(r.alertReason)}</div>`:""}</td>
+    <td class="td-amount">${fmtAg(r.line.amountAgorot)} ₪</td>
+    <td><span class="pill ${r.status==="MATCHED"?"pill-ok":r.status==="ANOMALY"?"pill-anomaly":"pill-review"}">
+      ${r.status==="MATCHED"?"תואם":r.status==="ANOMALY"?"חריג":"לבדיקה"}</span></td></tr>`;
+  return `<div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line)">
+    <div class="sum-pills">
+      <span class="pill pill-ok">${s.matched} תואמים</span>
+      <span class="pill pill-review">${s.review} לבדיקה</span>
+      ${s.anomaly?`<span class="pill pill-anomaly">${s.anomaly} חריגים</span>`:""}
+      ${d.unreadableRowCount?`<span class="pill pill-review">${d.unreadableRowCount} שורות לא נקראו</span>`:""}
+    </div>
+    <table class="tbl"><thead><tr><th>תאריך</th><th>בית עסק</th><th>סכום</th><th>סטטוס</th></tr></thead>
+      <tbody>${d.results.map(row).join("")}</tbody></table>
+    ${d.unmatchedExpenses.length?`<div class="alert alert-לבדיקה" style="margin-top:12px">
+      <b>הוצאות שרשמת ולא הופיעו בדוח</b>${d.unmatchedExpenses.length} הוצאות. ייתכן חיוב שטרם נכנס או טעות הקלדה.</div>`:""}
+    ${d.recurring.length?`<div class="alert alert-לבדיקה"><b>חיובים חוזרים שזוהו</b>
+      ${d.recurring.map(r=>esc(r.merchantRaw)+" · "+fmtAg(r.amountAgorot)+" ₪").join(" · ")}</div>`:""}
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="docConfirm">אשר ושמור</button>
+      <button class="btn btn-ghost" id="docDiscard">בטל</button>
+    </div>
+    <p style="font-size:11.5px;color:var(--muted);text-align:center;margin:10px 0 0">${esc(d.note||"")}</p>
+  </div>`;
 }
 
 /* ---------- מחליף תצוגה ---------- */
@@ -931,7 +1148,7 @@ function greet(){
 }
 // טעינת כל נתוני המשתמש במקביל. משמש בהתחברות, בהרשמה ובטעינת הדף.
 async function loadAllData(){
-  await Promise.all([fetchEntries(), fetchExpenses(), fetchCategories()]);
+  await Promise.all([fetchEntries(), fetchExpenses(), fetchCategories(), fetchDocStatus(), fetchPayslips()]);
 }
 function loadApp(){
   authOverlay.classList.add("hidden");

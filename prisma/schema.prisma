@@ -21,6 +21,8 @@ model User {
   createdAt    DateTime             @default(now())
   workdays     WorkDay[]
   expenses     Expense[]
+  payslips     PayslipAnalysis[]
+  statement    StatementLine[]
   resetTokens  PasswordResetToken[]
 }
 
@@ -51,8 +53,47 @@ model Expense {
   category    String   // נגזר אוטומטית מהתיאור, ניתן לעריכה
   merchant    String?
   source      String   @default("MANUAL") // MANUAL | STATEMENT
+  matchedStatementLineId Int?              // מתמלא בהצלבת עו״ש
   createdAt   DateTime @default(now())
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+}
+
+// תוצאת ניתוח תלוש. **המסמך המקורי אינו נשמר** — רק המספרים שהמשתמש אישר.
+// שדות מורכבים נשמרים כמחרוזת JSON ולא כ-Json: Prisma לא תומך בטיפוס Json
+// ב-SQLite, וזה היה שובר את ההרצה המקומית (אותה מגבלה כמו enum ב-Expense).
+model PayslipAnalysis {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  month         String   // 'YYYY-MM'
+  grossAgorot   Int?
+  netAgorot     Int?
+  deductions    String   @default("{}") // JSON: incomeTax, nationalInsurance, healthTax, pension, other
+  hoursReported Float?
+  daysReported  Int?
+  comparison    String   @default("{}") // JSON: הצלבה מול היומן
+  alerts        String   @default("[]") // JSON: מערך התראות
+  reportText    String   @default("")
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month])
+}
+
+// שורה מדוח עו״ש. גם כאן — הדוח המקורי אינו נשמר, רק השורות שחולצו ואושרו.
+model StatementLine {
+  id               Int      @id @default(autoincrement())
+  userId           Int
+  date             String   // 'YYYY-MM-DD'
+  amountAgorot     Int
+  merchantRaw      String
+  matchStatus      String   @default("REVIEW") // MATCHED | REVIEW | ANOMALY
+  matchedExpenseId Int?
+  confidence       Float?
+  alertReason      String?
+  createdAt        DateTime @default(now())
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, date])
 }

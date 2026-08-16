@@ -11,17 +11,20 @@
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
     "setup:local": "node scripts/local-db.js",
+    "test": "node --test test/*.test.js",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev --name init",
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.117.1",
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
+    "multer": "^2.2.0",
     "prisma": "^5.22.0"
   }
 }
