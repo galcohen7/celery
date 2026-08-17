@@ -115,6 +115,35 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo',system-u
 .pill-review{background:#F1EBCF;color:#6B5417;}
 .pill-anomaly{background:#FBEDEC;color:#7A2F29;}
 
+/* ===== הגדרות ===== */
+.mode-toggle{display:flex;gap:4px;background:var(--indigo-soft);border-radius:9px;padding:3px;flex:0 0 auto;}
+.mode-toggle.wide{width:100%;}
+.mode-toggle button{flex:1;border:none;background:transparent;color:var(--muted);cursor:pointer;
+  font-family:'Heebo',sans-serif;font-size:12.5px;padding:7px 11px;border-radius:7px;white-space:nowrap;transition:all .15s;}
+.mode-toggle button.on{background:var(--surface);color:var(--indigo);font-weight:600;box-shadow:0 1px 2px rgba(27,30,51,.12);}
+.rate-field{margin-bottom:14px;}
+.rate-field > label{display:block;font-size:12.5px;color:var(--muted);font-weight:500;margin-bottom:5px;}
+.rate-row{display:flex;gap:8px;align-items:stretch;}
+.rate-row input{flex:1;min-width:0;font-family:'Heebo',sans-serif;font-size:15px;padding:10px 12px;
+  border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);}
+.rate-row input:focus{outline:none;border-color:var(--indigo);}
+.rate-field small{display:block;color:var(--muted);font-size:11.5px;margin-top:4px;}
+.preview-box{margin-top:16px;padding:14px;background:var(--accent-soft);border-radius:12px;}
+.preview-box h3{font-family:'Rubik',sans-serif;font-size:13px;margin:0 0 8px;color:var(--accent-deep);}
+.preview-box .kv{border-bottom-color:rgba(0,0,0,.06);}
+.ent-row{display:flex;gap:10px;align-items:flex-start;padding:10px;border:1.5px solid var(--line);
+  border-radius:11px;margin-bottom:7px;cursor:pointer;transition:border-color .15s;}
+.ent-row:hover{border-color:var(--indigo);}
+.ent-row.locked{opacity:.72;cursor:default;background:var(--bg);}
+.ent-row input{margin-top:3px;width:17px;height:17px;flex:0 0 auto;}
+.ent-body{flex:1;min-width:0;}
+.ent-body b{font-size:13.5px;font-weight:600;}
+.ent-body small{display:block;color:var(--muted);font-size:11.5px;margin-top:2px;line-height:1.45;}
+.ent-pts{font-family:'Rubik',sans-serif;font-size:11.5px;font-weight:600;color:var(--accent-deep);
+  background:var(--accent-soft);border-radius:99px;padding:2px 8px;margin-inline-start:6px;}
+.ent-pts.unk{color:#6B5417;background:var(--sat-soft);}
+.alert a{color:inherit;font-weight:600;}
+
 .tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;scrollbar-width:thin;}
 .tab{flex:0 0 auto;font-family:'Heebo',sans-serif;font-size:13.5px;font-weight:500;
   padding:8px 15px;border-radius:99px;border:1.5px solid var(--line);background:#fff;
@@ -330,6 +359,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo',system-u
     <button class="view-btn active" data-view="salary">שכר</button>
     <button class="view-btn" data-view="expenses">הוצאות</button>
     <button class="view-btn" data-view="documents">מסמכים</button>
+    <button class="view-btn" data-view="settings">הגדרות</button>
   </div>
 
   <button class="add-btn" id="openCal"><span class="plus">＋</span> הכנס יום עבודה</button>
@@ -696,7 +726,8 @@ function groupByMonth(){
 function render(){
   if(view==="salary") return renderSalary();
   if(view==="expenses") return renderExpenses();
-  return renderDocuments();
+  if(view==="documents") return renderDocuments();
+  return renderSettings();
 }
 
 function renderSalary(){
@@ -997,6 +1028,186 @@ function statementDraftHtml(d){
   </div>`;
 }
 
+/* ---------- הגדרות: פרטי עבודה ומיסים ---------- */
+let wageProfile=null, taxProfile=null, entitlementsList=[], entitlementsMeta=null, selectedEnt=[];
+
+async function fetchWage(){ const d=await api("/wage/profile"); wageProfile=d.profile; }
+async function fetchTax(){ const d=await api("/tax/profile"); taxProfile=d.profile; }
+async function fetchEntitlements(){
+  const d=await api("/tax/entitlements");
+  entitlementsList=d.entitlements; entitlementsMeta=d.meta;
+}
+
+// שדה תעריף: אחוז מהבסיס או סכום מוחלט. זה הלב של הדרישה —
+// המשתמש כותב "150%" או "60 ₪", מה שנוח לו.
+function rateField(id,label,mode,value,hint){
+  return `<div class="rate-field">
+    <label>${esc(label)}</label>
+    <div class="rate-row">
+      <input type="number" id="${id}Value" value="${value}" step="0.01" min="0">
+      <div class="mode-toggle" id="${id}Mode" data-mode="${mode}">
+        <button type="button" data-m="PERCENT" class="${mode==="PERCENT"?"on":""}">% מהבסיס</button>
+        <button type="button" data-m="ABSOLUTE" class="${mode==="ABSOLUTE"?"on":""}">₪ לשעה</button>
+      </div>
+    </div>
+    <small>${esc(hint)}</small>
+  </div>`;
+}
+
+function renderSettings(){
+  $("grandLabel").textContent=""; grandEl.style.display="none";
+  const w=wageProfile||{}, t=taxProfile||{};
+
+  contentEl.innerHTML=`
+  <section class="card">
+    <div class="panel-head"><div class="panel-title"><h2>פרטי עבודה</h2>
+      <div class="panel-meta">התעריפים שלפיהם מחושב השכר</div></div></div>
+
+    <div class="fg" style="margin:14px 0">
+      <label>סוג שכר</label>
+      <div class="mode-toggle wide" id="payType" data-mode="${w.payType}">
+        <button type="button" data-m="HOURLY" class="${w.payType==="HOURLY"?"on":""}">שעתי</button>
+        <button type="button" data-m="MONTHLY" class="${w.payType==="MONTHLY"?"on":""}">חודשי</button>
+      </div>
+    </div>
+
+    <div id="hourlyFields" style="display:${w.payType==="HOURLY"?"block":"none"}">
+      <div class="fg" style="margin-bottom:14px">
+        <label for="hourlyRate">תעריף בסיס (₪ לשעה)</label>
+        <input id="hourlyRate" type="number" value="${w.hourlyRate}" step="0.01" min="0">
+      </div>
+      ${rateField("overtime","שעות נוספות",w.overtimeMode,w.overtimeValue,"החוק בישראל: 125% לשעתיים הראשונות. כאן מוחל מכפיל אחיד.")}
+      ${rateField("weekend","סוף שבוע",w.weekendMode,w.weekendValue,"חל בחלון שישי 16:00 עד ראשון 08:00.")}
+      ${rateField("holiday","חג",w.holidayMode,w.holidayValue,"חל על ימים שסומנו כחג.")}
+      <div class="grid2" style="margin-top:14px">
+        <div class="fg"><label for="otThreshold">סף שעות נוספות</label>
+          <input id="otThreshold" type="number" value="${w.overtimeThresholdHours}" step="0.5" min="0" max="24"></div>
+        <div class="fg"><label for="fridayUntil">שישי משולם עד</label>
+          <input id="fridayUntil" type="time" value="${w.fridayPaidUntil||""}"></div>
+      </div>
+      <small style="color:var(--muted);display:block;margin-top:4px">השאר את שדה שישי ריק כדי לבטל את ההארכה.</small>
+    </div>
+
+    <div id="monthlyFields" style="display:${w.payType==="MONTHLY"?"block":"none"}">
+      <div class="fg"><label for="monthlySalary">שכר חודשי ברוטו (₪)</label>
+        <input id="monthlySalary" type="number" value="${w.monthlySalary??""}" step="0.01" min="0"></div>
+      <div class="privacy-note" style="margin-top:12px">במצב חודשי המשמרות עדיין נרשמות — אבל לא כדי לחשב הכנסה,
+        אלא כדי לאמת שהתלוש משקף את הימים שעבדת.</div>
+    </div>
+
+    <div id="wagePreview" class="preview-box"></div>
+    <div class="modal-actions"><button class="btn btn-primary" id="saveWage">שמור פרטי עבודה</button></div>
+    <div class="privacy-note" style="background:var(--sat-soft);color:#6B5417">
+      ⚠️ שינוי התעריפים משפיע רק על ימים שיוזנו מכאן והלאה. ימים קיימים לא מחושבים מחדש,
+      כדי לא למחוק עריכות ידניות שביצעת.</div>
+  </section>
+
+  <section class="card" style="margin-top:16px">
+    <div class="panel-head"><div class="panel-title"><h2>מיסים</h2>
+      <div class="panel-meta">נקודות זיכוי והפרשות</div></div></div>
+
+    <h3 style="font-family:'Rubik';font-size:14px;margin:14px 0 8px">זכאויות</h3>
+    <div id="entList"></div>
+
+    <div class="grid2" style="margin-top:14px">
+      <div class="fg"><label for="creditPoints">נקודות זיכוי</label>
+        <input id="creditPoints" type="number" value="${t.creditPoints??2.25}" step="0.25" min="0" max="20"></div>
+      <div class="fg"><label for="pensionPercent">הפרשה לפנסיה (%)</label>
+        <input id="pensionPercent" type="number" value="${t.pensionPercent??0}" step="0.1" min="0" max="25"></div>
+    </div>
+    <div id="entNote"></div>
+    <div class="modal-actions"><button class="btn btn-primary" id="saveTax">שמור הגדרות מס</button></div>
+  </section>`;
+
+  renderEntitlements();
+  wirePreview();
+  contentEl.querySelectorAll(".mode-toggle").forEach(tg=>{
+    tg.addEventListener("click",e=>{
+      const b=e.target.closest("button[data-m]"); if(!b) return;
+      tg.dataset.mode=b.dataset.m;
+      tg.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
+      if(tg.id==="payType"){
+        $("hourlyFields").style.display=b.dataset.m==="HOURLY"?"block":"none";
+        $("monthlyFields").style.display=b.dataset.m==="MONTHLY"?"block":"none";
+      }
+      schedulePreview();
+    });
+  });
+  $("saveWage").addEventListener("click",saveWage);
+  $("saveTax").addEventListener("click",saveTax);
+  schedulePreview();
+}
+
+function readWageForm(){
+  const mode=id=>$(id).dataset.mode;
+  return {
+    payType:mode("payType"),
+    hourlyRate:Number($("hourlyRate").value)||0,
+    monthlySalary:$("monthlySalary")?.value===""?null:Number($("monthlySalary")?.value),
+    overtimeMode:mode("overtimeMode"), overtimeValue:Number($("overtimeValue").value)||0,
+    weekendMode:mode("weekendMode"), weekendValue:Number($("weekendValue").value)||0,
+    holidayMode:mode("holidayMode"), holidayValue:Number($("holidayValue").value)||0,
+    overtimeThresholdHours:Number($("otThreshold").value)||0,
+    fridayPaidUntil:$("fridayUntil").value||"",
+    weekendStartDow:wageProfile.weekendStartDow, weekendStartHour:wageProfile.weekendStartHour,
+    weekendEndDow:wageProfile.weekendEndDow, weekendEndHour:wageProfile.weekendEndHour,
+  };
+}
+
+let previewTimer=null;
+function schedulePreview(){ clearTimeout(previewTimer); previewTimer=setTimeout(runPreview,300); }
+function wirePreview(){
+  ["hourlyRate","overtimeValue","weekendValue","holidayValue","otThreshold","fridayUntil","monthlySalary"]
+    .forEach(id=>$(id)?.addEventListener("input",schedulePreview));
+}
+async function runPreview(){
+  const box=$("wagePreview"); if(!box) return;
+  try{
+    const d=await api("/wage/preview",{method:"POST",body:JSON.stringify({profile:readWageForm()})});
+    box.innerHTML=`<h3>כך ייראו ימים חדשים</h3>`+
+      d.samples.map(s=>`<div class="kv"><span>${esc(s.label)} <span class="diff">${esc(s.shift)}</span></span>
+        <span>${fmtMoney(s.salary)} ₪</span></div>`).join("");
+  }catch(e){ box.innerHTML=`<div class="alert alert-לבדיקה">${esc(e.message)}</div>`; }
+}
+
+function renderEntitlements(){
+  const box=$("entList"); if(!box) return;
+  box.innerHTML=entitlementsList.map(e=>{
+    const always=e.always, on=always||selectedEnt.includes(e.id);
+    return `<label class="ent-row ${always?"locked":""}">
+      <input type="checkbox" data-ent="${e.id}" ${on?"checked":""} ${always?"disabled":""}>
+      <span class="ent-body"><b>${esc(e.label)}</b>
+        ${e.points!=null?`<span class="ent-pts">${e.points} נק׳</span>`:`<span class="ent-pts unk">דורש אימות</span>`}
+        <small>${esc(e.note||"")}</small></span></label>`;
+  }).join("");
+  box.querySelectorAll("input[data-ent]").forEach(cb=>cb.addEventListener("change",async()=>{
+    selectedEnt=[...box.querySelectorAll("input[data-ent]:checked")].map(x=>x.dataset.ent);
+    const s=await api("/tax/suggest-points",{method:"POST",body:JSON.stringify({entitlementIds:selectedEnt})});
+    $("creditPoints").value=s.suggestedPoints;
+    $("entNote").innerHTML=
+      (s.needsConfirmation.length?`<div class="alert alert-לבדיקה"><b>דורש אימות</b>
+         ${s.needsConfirmation.map(n=>esc(n.label)).join(", ")} — מספר הנקודות תלוי בתנאים אישיים ולא חושב אוטומטית.
+         <a href="${esc(s.officialCalculator)}" target="_blank" rel="noopener">בדוק בסימולטור הרשמי של רשות המסים ←</a></div>`:"")
+      +`<div class="privacy-note">הסכום המוצע הוא ${s.suggestedPoints} נקודות. תמיד אפשר לתקן ידנית.</div>`;
+  }));
+}
+
+async function saveWage(){
+  try{
+    const d=await api("/wage/profile",{method:"PUT",body:JSON.stringify(readWageForm())});
+    wageProfile=d.profile; toast("פרטי העבודה נשמרו");
+  }catch(e){ toast(e.message); }
+}
+async function saveTax(){
+  try{
+    const d=await api("/tax/profile",{method:"PUT",body:JSON.stringify({
+      creditPoints:Number($("creditPoints").value)||0,
+      pensionPercent:Number($("pensionPercent").value)||0,
+      entitlements:selectedEnt})});
+    taxProfile=d.profile; toast("הגדרות המס נשמרו");
+  }catch(e){ toast(e.message); }
+}
+
 /* ---------- מחליף תצוגה ---------- */
 function setView(v){
   view=v;
@@ -1148,7 +1359,7 @@ function greet(){
 }
 // טעינת כל נתוני המשתמש במקביל. משמש בהתחברות, בהרשמה ובטעינת הדף.
 async function loadAllData(){
-  await Promise.all([fetchEntries(), fetchExpenses(), fetchCategories(), fetchDocStatus(), fetchPayslips()]);
+  await Promise.all([fetchEntries(), fetchExpenses(), fetchCategories(), fetchDocStatus(), fetchPayslips(), fetchWage(), fetchTax(), fetchEntitlements()]);
 }
 function loadApp(){
   authOverlay.classList.add("hidden");

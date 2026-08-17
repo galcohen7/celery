@@ -1,5 +1,6 @@
 const prisma = require("../config/db");
 const { computeDeductions, availableYears, getRates } = require("../services/tax/engine");
+const ENTITLEMENTS = require("../services/tax/entitlements-2026.json");
 
 const DEFAULT_YEAR = 2026;
 
@@ -72,4 +73,29 @@ function rates(req, res) {
   }
 }
 
-module.exports = { getProfile, saveProfile, calculate, rates };
+// GET /api/tax/entitlements — הרישום שהממשק מציג כצ׳ק-ליסט
+function entitlements(req, res) {
+  res.json({ year: ENTITLEMENTS.year, meta: ENTITLEMENTS._meta, entitlements: ENTITLEMENTS.entitlements });
+}
+
+// POST /api/tax/suggest-points — סכום נקודות לפי זכאויות שסומנו.
+// מחזיר גם את מה שלא ניתן לחשב, כדי שהממשק יבקש אימות ולא ייתן ביטחון מוטעה.
+function suggestPoints(req, res) {
+  const ids = new Set(Array.isArray(req.body?.entitlementIds) ? req.body.entitlementIds : []);
+  let total = 0;
+  const counted = [], needsConfirmation = [];
+  for (const e of ENTITLEMENTS.entitlements) {
+    const on = e.always || ids.has(e.id);
+    if (!on) continue;
+    if (e.points == null || e.unsupported) needsConfirmation.push({ id: e.id, label: e.label, note: e.note });
+    else { total += e.points; counted.push({ id: e.id, label: e.label, points: e.points }); }
+  }
+  res.json({
+    suggestedPoints: Math.round(total * 100) / 100,
+    counted,
+    needsConfirmation,
+    officialCalculator: ENTITLEMENTS._meta.officialCalculator,
+  });
+}
+
+module.exports = { getProfile, saveProfile, calculate, rates, entitlements, suggestPoints };

@@ -1,0 +1,93 @@
+{
+  "year": 2026,
+  "_meta": {
+    "retrievedAt": "2026-08-17",
+    "officialCalculator": "https://secapp.taxes.gov.il/srsimulatorNZ/",
+    "warning": "רישום חלקי. הזכאות לנקודות זיכוי בישראל תלויה בתנאים אישיים (גיל, מצב משפחתי, ותק, אחוזי נכות, שנת עלייה). הרישום כאן מכסה את המקרים הנפוצים בלבד, ואינו תחליף לסימולטור הרשמי של רשות המסים.",
+    "howToUse": "המשתמש מסמן זכאויות, האפליקציה מציעה סכום, והמשתמש מאמת בסימולטור הרשמי. תמיד ניתן להזין מספר ידנית ולעקוף את החישוב."
+  },
+
+  "entitlements": [
+    {
+      "id": "resident",
+      "label": "תושב ישראל",
+      "points": 2.25,
+      "always": true,
+      "note": "זכאות בסיסית לכל תושב ישראל. כלולה תמיד.",
+      "verified": true,
+      "source": "רשות המסים — לוח עזר לחישוב מס הכנסה 2026"
+    },
+    {
+      "id": "woman",
+      "label": "אישה",
+      "points": 0.5,
+      "note": "תוספת על הזכאות הבסיסית, סה״כ 2.75.",
+      "verified": true,
+      "source": "פקודת מס הכנסה סעיף 36א"
+    },
+    {
+      "id": "degree",
+      "label": "סיום תואר אקדמי או תעודת מקצוע",
+      "points": 1,
+      "note": "נקודה אחת לשנה, למספר שנים כמספר שנות הלימוד ועד 3 שנים. מוגשת בטופס 119.",
+      "verified": true,
+      "requiresConfirmation": true,
+      "source": "רשות המסים — טופס 119"
+    },
+    {
+      "id": "disabled_child",
+      "label": "הורה לילד עם נכות",
+      "points": 2,
+      "note": "להורה לילד המקבל קצבת ילד נכה, בכפוף לכך שבן/בת הזוג אינם תובעים אותן.",
+      "verified": true,
+      "requiresConfirmation": true,
+      "source": "פקודת מס הכנסה סעיף 45"
+    },
+    {
+      "id": "discharged_soldier",
+      "label": "חייל משוחרר / מסיים שירות לאומי",
+      "points": null,
+      "note": "זכאות ל-36 חודשים מהשחרור. מספר הנקודות תלוי באורך השירות — יש לאמת בסימולטור הרשמי.",
+      "verified": false,
+      "requiresConfirmation": true,
+      "source": "פקודת מס הכנסה סעיף 39א"
+    },
+    {
+      "id": "new_immigrant",
+      "label": "עולה חדש",
+      "points": null,
+      "note": "הזכאות יורדת בהדרגה לפי שנות הוותק בארץ. יש לאמת בסימולטור הרשמי.",
+      "verified": false,
+      "requiresConfirmation": true,
+      "source": "פקודת מס הכנסה סעיף 35"
+    },
+    {
+      "id": "single_parent",
+      "label": "הורה יחיד",
+      "points": null,
+      "note": "תלוי במספר הילדים ובגילם. יש לאמת בסימולטור הרשמי.",
+      "verified": false,
+      "requiresConfirmation": true,
+      "source": "פקודת מס הכנסה סעיף 40"
+    },
+    {
+      "id": "children",
+      "label": "ילדים",
+      "points": null,
+      "note": "מספר הנקודות תלוי בגיל הילד ובהורה התובע. עד גיל 5 שני ההורים זכאים באותה מידה; מגיל 6 יש הבדל. יש לאמת בסימולטור הרשמי.",
+      "verified": false,
+      "requiresConfirmation": true,
+      "source": "פקודת מס הכנסה סעיפים 36א, 40"
+    },
+    {
+      "id": "eligible_settlement",
+      "label": "תושב יישוב מוטב",
+      "points": null,
+      "note": "אינה נקודת זיכוי אלא זיכוי באחוזים מההכנסה, עד תקרה, ומשתנה לפי היישוב. אינה מחושבת כאן.",
+      "verified": false,
+      "requiresConfirmation": true,
+      "unsupported": true,
+      "source": "פקודת מס הכנסה סעיף 11"
+    }
+  ]
+}

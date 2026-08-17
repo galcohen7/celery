@@ -9,5 +9,7 @@ router.get("/profile", ah(c.getProfile));
 router.put("/profile", ah(c.saveProfile));
 router.post("/calculate", ah(c.calculate));
 router.get("/rates", c.rates);
+router.get("/entitlements", c.entitlements);
+router.post("/suggest-points", c.suggestPoints);
 
 module.exports = router;

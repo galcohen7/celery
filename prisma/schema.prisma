@@ -21,6 +21,7 @@ model User {
   createdAt    DateTime             @default(now())
   workdays     WorkDay[]
   expenses     Expense[]
+  wageProfile  WageProfile?
   taxProfile   TaxProfile?
   payslips     PayslipAnalysis[]
   statement    StatementLine[]
@@ -61,6 +62,40 @@ model Expense {
   @@index([userId, date])
 }
 
+// פרופיל השכר האישי. מחליף את הקבועים שהיו בקוד (spec.md 5.1).
+//
+// כל תעריף מיוצג כזוג mode+value: PERCENT = אחוז מתעריף הבסיס (150 → פי 1.5),
+// ABSOLUTE = סכום בשקלים לשעה. כך המשתמש יכול לכתוב "150%" או "60 ₪" — מה
+// שנוח לו — ושינוי תעריף הבסיס מתגלגל אוטומטית במצב PERCENT.
+//
+// ⚠️ ברירות המחדל מייצרות בדיוק את ההתנהגות הקודמת: 40 ₪ בסיס, סופ״ש 150%
+// (=60), נוספות 125%, סף 8 שעות, שישי משולם עד 23:00. משתמש קיים לא רואה
+// שום שינוי בימים שכבר הוזנו — ואלה לא מחושבים מחדש לעולם (spec.md 5.2).
+model WageProfile {
+  id            Int    @id @default(autoincrement())
+  userId        Int    @unique
+  payType       String @default("HOURLY") // HOURLY | MONTHLY
+  hourlyRate    Float  @default(40)
+  monthlySalary Float?
+
+  overtimeMode  String @default("PERCENT")  // PERCENT | ABSOLUTE
+  overtimeValue Float  @default(125)
+  weekendMode   String @default("PERCENT")
+  weekendValue  Float  @default(150)
+  holidayMode   String @default("PERCENT")
+  holidayValue  Float  @default(150)
+
+  overtimeThresholdHours Float   @default(8)
+  weekendStartDow        Int     @default(5)  // שישי
+  weekendStartHour       Int     @default(16)
+  weekendEndDow          Int     @default(0)  // ראשון
+  weekendEndHour         Int     @default(8)
+  fridayPaidUntil        String? @default("23:00") // null = ללא הארכה
+
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 // פרופיל המס האישי שמזין את מנוע המס.
 // exemptions נשמר כמחרוזת JSON — אין טיפוס Json ב-SQLite.
 model TaxProfile {
@@ -68,6 +103,8 @@ model TaxProfile {
   userId         Int      @unique
   creditPoints   Float    @default(2.25)
   pensionPercent Float    @default(0)
+  entitlements   String   @default("[]") // JSON: מזהי זכאויות שנבחרו מהרישום
+  manualOverride Boolean  @default(false) // המשתמש הזין מספר נקודות בעצמו
   exemptions     String   @default("[]") // JSON: [{section, description, amount|percent}]
   updatedAt      DateTime @updatedAt
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
