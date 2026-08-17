@@ -1357,9 +1357,25 @@ function showAuth(mode){
 function greet(){
   taglineEl.textContent = currentUser ? ("שלום, "+currentUser.displayName) : TAGLINE;
 }
-// טעינת כל נתוני המשתמש במקביל. משמש בהתחברות, בהרשמה ובטעינת הדף.
+// טעינת כל נתוני המשתמש במקביל.
+//
+// Promise.allSettled ולא Promise.all: עם all, כישלון של נקודה **אחת** הפיל את
+// כל הטעינה והמשתמש קיבל "אין חיבור לשרת" גם כששאר האפליקציה תקינה לגמרי.
+// כאן כל מה שנטען מוצג, ומה שנכשל מדווח בשמו — כדי שהתקלה תוביל למקום הנכון.
 async function loadAllData(){
-  await Promise.all([fetchEntries(), fetchExpenses(), fetchCategories(), fetchDocStatus(), fetchPayslips(), fetchWage(), fetchTax(), fetchEntitlements()]);
+  const jobs=[
+    ["ימי עבודה",fetchEntries],["הוצאות",fetchExpenses],["קטגוריות",fetchCategories],
+    ["מצב AI",fetchDocStatus],["תלושים",fetchPayslips],["פרופיל שכר",fetchWage],
+    ["פרופיל מס",fetchTax],["זכאויות",fetchEntitlements],
+  ];
+  const results=await Promise.allSettled(jobs.map(([,fn])=>fn()));
+  const failed=results.map((r,i)=>r.status==="rejected"?jobs[i][0]:null).filter(Boolean);
+
+  // כשלון אימות הוא מצב אחר לגמרי — יש לטפל בו כהתנתקות, לא כתקלה חלקית.
+  if(results.some(r=>r.status==="rejected" && r.reason?.message==="unauthorized")) throw new Error("unauthorized");
+  if(failed.length===jobs.length) throw new Error("אין חיבור לשרת");
+  if(failed.length) showBanner("חלק מהנתונים לא נטענו ("+failed.join(", ")+"). ייתכן שצריך להפעיל מחדש את השרת.");
+  else bannerEl.classList.add("hidden");
 }
 function loadApp(){
   authOverlay.classList.add("hidden");

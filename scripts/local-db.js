@@ -78,4 +78,9 @@ if (!fs.existsSync(envFile)) {
 }
 
 console.log("\nמסד מקומי מוכן: prisma/.local/dev.db");
+console.log(
+  "\n⚠️  אם שרת פיתוח רץ כרגע — **הפעל אותו מחדש**.\n" +
+    "   שרת שהופעל לפני יצירת הקליינט מחזיק גרסה ישנה שלו, וקורס\n" +
+    "   בבקשה הראשונה שנוגעת בסכימה החדשה. התסמין: \"failed to fetch\".\n"
+);
 console.log("כעת: npm run dev\n");
