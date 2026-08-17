@@ -17,6 +17,7 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/workdays", require("./routes/workdayRoutes"));
 app.use("/api/expenses", require("./routes/expenseRoutes"));
 app.use("/api/documents", require("./routes/documentRoutes"));
+app.use("/api/tax", require("./routes/taxRoutes"));
 
 // טיפול בנתיב לא קיים
 app.use((req, res) => res.status(404).json({ error: "לא נמצא" }));

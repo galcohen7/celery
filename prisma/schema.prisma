@@ -21,6 +21,7 @@ model User {
   createdAt    DateTime             @default(now())
   workdays     WorkDay[]
   expenses     Expense[]
+  taxProfile   TaxProfile?
   payslips     PayslipAnalysis[]
   statement    StatementLine[]
   resetTokens  PasswordResetToken[]
@@ -58,6 +59,18 @@ model Expense {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, date])
+}
+
+// פרופיל המס האישי שמזין את מנוע המס.
+// exemptions נשמר כמחרוזת JSON — אין טיפוס Json ב-SQLite.
+model TaxProfile {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @unique
+  creditPoints   Float    @default(2.25)
+  pensionPercent Float    @default(0)
+  exemptions     String   @default("[]") // JSON: [{section, description, amount|percent}]
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // תוצאת ניתוח תלוש. **המסמך המקורי אינו נשמר** — רק המספרים שהמשתמש אישר.

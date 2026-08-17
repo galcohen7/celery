@@ -1,0 +1,53 @@
+{
+  "year": 2026,
+  "_meta": {
+    "retrievedAt": "2026-08-17",
+    "sources": [
+      {
+        "what": "מדרגות מס הכנסה, שווי נקודת זיכוי, מס יסף",
+        "publisher": "רשות המסים בישראל",
+        "document": "לוח עזר לחישוב מס הכנסה ממשכורת ושכר עבודה לחודש ינואר 2026, פרק ב' ופרק ג'",
+        "url": "https://www.gov.il/BlobFolder/generalpage/income-tax-monthly-deductions-booklet/he/generalInformation_income-tax-monthly-deductions-booklet_monthly-deductions-booklet-2026.pdf"
+      },
+      {
+        "what": "שיעורי דמי ביטוח לאומי ודמי ביטוח בריאות, חלק העובד",
+        "publisher": "המוסד לביטוח לאומי",
+        "document": "שיעורי וסכומי דמי ביטוח — לעובדים שכירים",
+        "url": "https://www.btl.gov.il/Insurance/Rates/Pages/%D7%9C%D7%A2%D7%95%D7%91%D7%93%D7%99%D7%9D%20%D7%A9%D7%9B%D7%99%D7%A8%D7%99%D7%9D.aspx"
+      }
+    ],
+    "note": "המדרגות נשמרות כסכומים שנתיים כפי שהם מופיעים בחוק, והמנוע גוזר מהן חודשי בחלוקה ב-12. כך אין העתקה כפולה של מספרים ואין סיכון לשגיאת תמלול."
+  },
+
+  "incomeTax": {
+    "basis": "annual",
+    "brackets": [
+      { "upTo": 84120, "rate": 0.10 },
+      { "upTo": 120720, "rate": 0.14 },
+      { "upTo": 228000, "rate": 0.20 },
+      { "upTo": 301200, "rate": 0.31 },
+      { "upTo": 560280, "rate": 0.35 },
+      { "upTo": null, "rate": 0.47 }
+    ],
+    "surtax": {
+      "annualThreshold": 721560,
+      "rate": 0.03,
+      "note": "מס יסף לפי סעיף 121ב. תוספת ה-2% שנקבעה בחוק ההתייעלות חלה על הכנסה ממקורות הוניים בלבד ולכן אינה רלוונטית למשכורת."
+    }
+  },
+
+  "creditPoint": {
+    "monthlyValue": 242,
+    "note": "שווי נקודת זיכוי אחת לחודש. תושב ישראל זכאי בדרך כלל ל-2.25 נקודות, ואישה ל-2.75."
+  },
+
+  "nationalInsurance": {
+    "basis": "monthly",
+    "reducedBandCeiling": 7703,
+    "maxInsurableIncome": 51910,
+    "employee": {
+      "nationalInsurance": { "reduced": 0.0104, "full": 0.07 },
+      "healthInsurance": { "reduced": 0.0323, "full": 0.0517 }
+    }
+  }
+}
