@@ -92,6 +92,13 @@ model WageProfile {
   weekendEndHour         Int     @default(8)
   fridayPaidUntil        String? @default("23:00") // null = ללא הארכה
 
+  // זכאות חופשה ומחלה. ברירת המחדל למחלה היא המינימום החוקי (1.5 ליום חודש,
+  // תקרה 90). לחופשה אין ברירת מחדל: היא תלויה בוותק ובהסכם, ולכן נלקחת
+  // מהתלוש או מוגדרת ידנית ולא מנוחשת.
+  annualVacationDays   Float?
+  sickAccrualPerMonth  Float @default(1.5)
+  sickAccrualCap       Float @default(90)
+
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -122,6 +129,8 @@ model PayslipAnalysis {
   deductions    String   @default("{}") // JSON: incomeTax, nationalInsurance, healthTax, pension, other
   hoursReported Float?
   daysReported  Int?
+  vacationBalance Float?  // יתרת ימי חופשה כפי שמופיעה בתלוש
+  sickBalance     Float?  // יתרת ימי מחלה כפי שמופיעה בתלוש
   comparison    String   @default("{}") // JSON: הצלבה מול היומן
   alerts        String   @default("[]") // JSON: מערך התראות
   reportText    String   @default("")

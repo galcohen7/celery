@@ -18,6 +18,7 @@ app.use("/api/workdays", require("./routes/workdayRoutes"));
 app.use("/api/expenses", require("./routes/expenseRoutes"));
 app.use("/api/documents", require("./routes/documentRoutes"));
 app.use("/api/wage", require("./routes/wageRoutes"));
+app.use("/api/leave", require("./routes/leaveRoutes"));
 app.use("/api/tax", require("./routes/taxRoutes"));
 
 // טיפול בנתיב לא קיים

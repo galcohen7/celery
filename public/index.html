@@ -144,6 +144,21 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo',system-u
 .ent-pts.unk{color:#6B5417;background:var(--sat-soft);}
 .alert a{color:inherit;font-weight:600;}
 
+/* ===== יתרות חופשה ומחלה ===== */
+.leave-card{margin-bottom:0;}
+.leave-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;}
+.leave-box{background:var(--indigo-soft);border-radius:12px;padding:13px;}
+.leave-label{font-size:12px;color:var(--muted);font-weight:500;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.leave-val{font-family:'Rubik',sans-serif;font-weight:800;font-size:26px;color:var(--indigo);line-height:1.15;margin-top:3px;}
+.leave-val em{font-style:normal;font-size:13px;font-weight:500;color:var(--muted);}
+.leave-sub{font-size:11.5px;color:var(--muted);margin-top:1px;}
+.leave-note{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.45;}
+.src-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:99px;}
+.src-badge.ok{background:var(--green-soft);color:#2F6B44;}
+.src-badge.est{background:var(--sat-soft);color:#6B5417;}
+.src-badge.none{background:var(--line);color:var(--muted);}
+@media (max-width:480px){.leave-grid{grid-template-columns:1fr;}}
+
 .tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;scrollbar-width:thin;}
 .tab{flex:0 0 auto;font-family:'Heebo',sans-serif;font-size:13.5px;font-weight:500;
   padding:8px 15px;border-radius:99px;border:1.5px solid var(--line);background:#fff;
@@ -319,24 +334,31 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo',system-u
     <div class="head-row">
       <div class="brand">
         <svg class="brand-logo" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-label="Celery">
-  <ellipse cx="98" cy="60" rx="15" ry="20" transform="rotate(-24 98 60)" fill="#4E7C3A"/>
-  <ellipse cx="142" cy="60" rx="15" ry="20" transform="rotate(24 142 60)" fill="#4E7C3A"/>
-  <ellipse cx="120" cy="48" rx="17" ry="24" fill="#5E9143"/>
-  <ellipse cx="106" cy="50" rx="12" ry="17" transform="rotate(-14 106 50)" fill="#79AE52"/>
-  <ellipse cx="134" cy="50" rx="12" ry="17" transform="rotate(14 134 50)" fill="#79AE52"/>
-  <ellipse cx="120" cy="42" rx="11" ry="16" fill="#8CBE62"/>
-  <path d="M84 96 Q84 76 104 76 L136 76 Q156 76 156 96 L156 190 Q156 210 136 210 L104 210 Q84 210 84 190 Z" fill="#CBDFA0"/>
-  <g stroke="#AECB82" stroke-width="3.5" stroke-linecap="round" opacity="0.9"><line x1="103" y1="90" x2="103" y2="150"/><line x1="120" y1="88" x2="120" y2="150"/><line x1="137" y1="90" x2="137" y2="150"/></g>
-  <path d="M84 168 L120 186 L156 168 L156 190 Q156 210 136 210 L104 210 Q84 210 84 190 Z" fill="#354A32"/>
-  <path d="M107 168 L120 188 L133 168 Z" fill="#FFFFFF"/>
-  <path d="M107 168 L120 188 L113 172 Z" fill="#EAEFE3"/><path d="M133 168 L120 188 L127 172 Z" fill="#EAEFE3"/>
-  <path d="M116 170 L124 170 L120 179 Z" fill="#5C7F3D"/>
-  <path d="M120 179 L126 184 L122 205 L118 205 L114 184 Z" fill="#7FA65C"/>
-  <g fill="#232B22"><rect x="96" y="100" width="22" height="17" rx="7"/><rect x="122" y="100" width="22" height="17" rx="7"/><rect x="116" y="105" width="8" height="4" rx="2"/></g>
-  <g fill="#FFFFFF" opacity="0.28"><rect x="100" y="103" width="8" height="4" rx="2"/><rect x="126" y="103" width="8" height="4" rx="2"/></g>
-  <path d="M101 131 Q120 160 139 131 Z" fill="#2A2320"/><path d="M104 130 Q120 145 136 130 Z" fill="#FFFFFF"/>
-  <path d="M149 120 L151.5 126 L158 128.5 L151.5 131 L149 137 L146.5 131 L140 128.5 L146.5 126 Z" fill="#FFFFFF"/>
-  <circle cx="139" cy="139" r="2.2" fill="#FFFFFF"/>
+<!-- לוגו Celery — גרסה מפושטת.
+       עקרונות: צללית אחת ברורה, שלושה עלים במקום שישה, משקפיים בולטים
+       כצורה אחת מחוברת, וחיוך שנותן אופי. ללא ניצוץ, ללא עניבה, ללא כיס. -->
+
+  <!-- עלים: שלושה בלבד, סימטריים, בשתי רמות עומק -->
+  <path d="M120 26c14 0 24 12 24 26s-10 24-24 24-24-10-24-24 10-26 24-26z" fill="#8CBE62"/>
+  <path d="M92 44c11-5 22 2 26 14s-2 23-13 26-21-6-24-18 0-17 11-22z" fill="#5E9143"/>
+  <path d="M148 44c-11-5-22 2-26 14s2 23 13 26 21-6 24-18 0-17-11-22z" fill="#5E9143"/>
+
+  <!-- גבעול: צורה אחת, פינות מעוגלות, מתרחבת קלות למטה -->
+  <path d="M120 78c22 0 34 10 34 28v76c0 20-13 32-34 32s-34-12-34-32v-76c0-18 12-28 34-28z" fill="#CBDFA0"/>
+
+  <!-- שני קווי גבעול בלבד, מרמזים על מרקם -->
+  <g stroke="#AECB82" stroke-width="4" stroke-linecap="round" opacity=".85">
+    <line x1="105" y1="96" x2="105" y2="150"/>
+    <line x1="135" y1="96" x2="135" y2="150"/>
+  </g>
+
+  <!-- משקפי שמש: צורה אחת מחוברת, נוכחות חזקה -->
+  <path d="M88 108h64a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4h-2v6c0 9-7 16-16 16s-16-7-16-16v-4h-4v4c0 9-7 16-16 16s-16-7-16-16v-6h-2a4 4 0 0 1-4-4v-6a4 4 0 0 1 4-4z" fill="#232B22"/>
+  <path d="M96 116h18v10c0 5-4 9-9 9s-9-4-9-9z" fill="#3A4A38" opacity=".55"/>
+  <path d="M126 116h18v10c0 5-4 9-9 9s-9-4-9-9z" fill="#3A4A38" opacity=".55"/>
+
+  <!-- חיוך: קו אחד, בטוח -->
+  <path d="M104 158c5 8 27 8 32 0" stroke="#3E5C32" stroke-width="6" stroke-linecap="round" fill="none"/>
 </svg>
         <div>
           <h1 class="wordmark">Celery</h1>
@@ -378,24 +400,31 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo',system-u
 <div class="overlay lock hidden" id="authOverlay">
   <div class="lock-card">
     <svg class="auth-logo" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-label="Celery">
-  <ellipse cx="98" cy="60" rx="15" ry="20" transform="rotate(-24 98 60)" fill="#4E7C3A"/>
-  <ellipse cx="142" cy="60" rx="15" ry="20" transform="rotate(24 142 60)" fill="#4E7C3A"/>
-  <ellipse cx="120" cy="48" rx="17" ry="24" fill="#5E9143"/>
-  <ellipse cx="106" cy="50" rx="12" ry="17" transform="rotate(-14 106 50)" fill="#79AE52"/>
-  <ellipse cx="134" cy="50" rx="12" ry="17" transform="rotate(14 134 50)" fill="#79AE52"/>
-  <ellipse cx="120" cy="42" rx="11" ry="16" fill="#8CBE62"/>
-  <path d="M84 96 Q84 76 104 76 L136 76 Q156 76 156 96 L156 190 Q156 210 136 210 L104 210 Q84 210 84 190 Z" fill="#CBDFA0"/>
-  <g stroke="#AECB82" stroke-width="3.5" stroke-linecap="round" opacity="0.9"><line x1="103" y1="90" x2="103" y2="150"/><line x1="120" y1="88" x2="120" y2="150"/><line x1="137" y1="90" x2="137" y2="150"/></g>
-  <path d="M84 168 L120 186 L156 168 L156 190 Q156 210 136 210 L104 210 Q84 210 84 190 Z" fill="#354A32"/>
-  <path d="M107 168 L120 188 L133 168 Z" fill="#FFFFFF"/>
-  <path d="M107 168 L120 188 L113 172 Z" fill="#EAEFE3"/><path d="M133 168 L120 188 L127 172 Z" fill="#EAEFE3"/>
-  <path d="M116 170 L124 170 L120 179 Z" fill="#5C7F3D"/>
-  <path d="M120 179 L126 184 L122 205 L118 205 L114 184 Z" fill="#7FA65C"/>
-  <g fill="#232B22"><rect x="96" y="100" width="22" height="17" rx="7"/><rect x="122" y="100" width="22" height="17" rx="7"/><rect x="116" y="105" width="8" height="4" rx="2"/></g>
-  <g fill="#FFFFFF" opacity="0.28"><rect x="100" y="103" width="8" height="4" rx="2"/><rect x="126" y="103" width="8" height="4" rx="2"/></g>
-  <path d="M101 131 Q120 160 139 131 Z" fill="#2A2320"/><path d="M104 130 Q120 145 136 130 Z" fill="#FFFFFF"/>
-  <path d="M149 120 L151.5 126 L158 128.5 L151.5 131 L149 137 L146.5 131 L140 128.5 L146.5 126 Z" fill="#FFFFFF"/>
-  <circle cx="139" cy="139" r="2.2" fill="#FFFFFF"/>
+<!-- לוגו Celery — גרסה מפושטת.
+       עקרונות: צללית אחת ברורה, שלושה עלים במקום שישה, משקפיים בולטים
+       כצורה אחת מחוברת, וחיוך שנותן אופי. ללא ניצוץ, ללא עניבה, ללא כיס. -->
+
+  <!-- עלים: שלושה בלבד, סימטריים, בשתי רמות עומק -->
+  <path d="M120 26c14 0 24 12 24 26s-10 24-24 24-24-10-24-24 10-26 24-26z" fill="#8CBE62"/>
+  <path d="M92 44c11-5 22 2 26 14s-2 23-13 26-21-6-24-18 0-17 11-22z" fill="#5E9143"/>
+  <path d="M148 44c-11-5-22 2-26 14s2 23 13 26 21-6 24-18 0-17-11-22z" fill="#5E9143"/>
+
+  <!-- גבעול: צורה אחת, פינות מעוגלות, מתרחבת קלות למטה -->
+  <path d="M120 78c22 0 34 10 34 28v76c0 20-13 32-34 32s-34-12-34-32v-76c0-18 12-28 34-28z" fill="#CBDFA0"/>
+
+  <!-- שני קווי גבעול בלבד, מרמזים על מרקם -->
+  <g stroke="#AECB82" stroke-width="4" stroke-linecap="round" opacity=".85">
+    <line x1="105" y1="96" x2="105" y2="150"/>
+    <line x1="135" y1="96" x2="135" y2="150"/>
+  </g>
+
+  <!-- משקפי שמש: צורה אחת מחוברת, נוכחות חזקה -->
+  <path d="M88 108h64a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4h-2v6c0 9-7 16-16 16s-16-7-16-16v-4h-4v4c0 9-7 16-16 16s-16-7-16-16v-6h-2a4 4 0 0 1-4-4v-6a4 4 0 0 1 4-4z" fill="#232B22"/>
+  <path d="M96 116h18v10c0 5-4 9-9 9s-9-4-9-9z" fill="#3A4A38" opacity=".55"/>
+  <path d="M126 116h18v10c0 5-4 9-9 9s-9-4-9-9z" fill="#3A4A38" opacity=".55"/>
+
+  <!-- חיוך: קו אחד, בטוח -->
+  <path d="M104 158c5 8 27 8 32 0" stroke="#3E5C32" stroke-width="6" stroke-linecap="round" fill="none"/>
 </svg>
     <h2 id="authTitle">התחברות</h2>
     <p class="lock-sub" id="authSub"></p>
@@ -730,13 +759,42 @@ function render(){
   return renderSettings();
 }
 
+// כרטיס יתרות חופשה ומחלה. מוצג בראש תצוגת השכר — זה "האזור האישי".
+function leaveCardHtml(){
+  if(!leaveBalance) return "";
+  const l=leaveBalance;
+  const badge=src=>src==="payslip"?'<span class="src-badge ok">מהתלוש</span>'
+    :src==="estimate"?'<span class="src-badge est">אומדן</span>'
+    :'<span class="src-badge none">אין נתון</span>';
+  const val=v=>v==null?"—":Number(v).toLocaleString("he-IL",{maximumFractionDigits:1});
+  return `<section class="card leave-card">
+    <div class="panel-head" style="padding-bottom:10px">
+      <div class="panel-title"><h2>ימי חופשה ומחלה</h2>
+        <div class="panel-meta">היתרה שנותרה לך</div></div></div>
+    <div class="leave-grid">
+      <div class="leave-box">
+        <div class="leave-label">חופשה ${badge(l.vacation.source)}</div>
+        <div class="leave-val">${val(l.vacation.balance)}<em> ימים</em></div>
+        ${l.vacation.annualEntitlement!=null?`<div class="leave-sub">מתוך ${l.vacation.annualEntitlement} בשנה</div>`:""}
+        <div class="leave-note">${esc(l.vacation.note)}</div>
+      </div>
+      <div class="leave-box">
+        <div class="leave-label">מחלה ${badge(l.sick.source)}</div>
+        <div class="leave-val">${val(l.sick.balance)}<em> ימים</em></div>
+        <div class="leave-sub">צבירה ${l.sick.accrualPerMonth} לחודש · תקרה ${l.sick.cap}</div>
+        <div class="leave-note">${esc(l.sick.note)}</div>
+      </div>
+    </div>
+  </section>`;
+}
+
 function renderSalary(){
   $("grandLabel").textContent="סה״כ נצבר";
   const grand=entries.reduce((s,e)=>s+Number(e.salary),0);
   if(entries.length){grandEl.style.display="flex";grandValEl.innerHTML=fmtMoney(grand)+' <em>₪</em>';}
   else grandEl.style.display="none";
   if(entries.length===0){
-    contentEl.innerHTML='<div class="card empty-state"><p>עדיין לא הזנת ימי עבודה.</p><p class="empty-sub">הקש על «הכנס יום עבודה» כדי לפתוח את לוח השנה.</p></div>';
+    contentEl.innerHTML=leaveCardHtml()+'<div class="card empty-state" style="margin-top:16px"><p>עדיין לא הזנת ימי עבודה.</p><p class="empty-sub">הקש על «הכנס יום עבודה» כדי לפתוח את לוח השנה.</p></div>';
     return;
   }
   const groups=groupByMonth();
@@ -749,8 +807,8 @@ function renderSalary(){
       <td class="td-shift">${e.start}–${e.end}</td>
       <td class="td-salary">${fmtMoney(e.salary)} ₪</td>
       <td class="td-actions"><button class="row-edit" data-edit="${e.date}" aria-label="עריכת יום">✎</button></td></tr>`;}).join("");
-  contentEl.innerHTML=`
-    <div class="tabs">${tabs}</div>
+  contentEl.innerHTML=leaveCardHtml()+`
+    <div class="tabs" style="margin-top:16px">${tabs}</div>
     <section class="card">
       <div class="panel-head">
         <div class="panel-title"><h2>${HEB_MONTHS[g.monthIdx]} <span>${g.year}</span></h2>
@@ -887,7 +945,7 @@ function renderDocuments(){
           <b>דוח עו״ש</b><span>הצלבה מול ההוצאות</span></button>
       </div>
       ${docType==="payslip"?`<div class="fg" style="margin-bottom:12px">
-        <label for="docMonth">חודש התלוש</label>
+        <label for="docMonth">חודש (רמז בלבד — נלקח מהתלוש אם מופיע בו)</label>
         <input id="docMonth" type="month" value="${thisMonth}" style="width:100%;font-family:'Heebo',sans-serif;font-size:15px;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;">
       </div>`:""}
       <div class="drop" id="drop">
@@ -965,7 +1023,7 @@ function payslipDraftHtml(d){
   const x=d.extracted, c=d.comparison, dd=x.deductions||{};
   const sh=v=>v==null?"—":Number(v).toLocaleString("he-IL",{maximumFractionDigits:2})+" ₪";
   return `<div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line)">
-    <h3 style="font-family:'Rubik';font-size:15px;margin:0 0 10px">פרטי התלוש · ${esc(d.month)}</h3>
+    <h3 style="font-family:'Rubik';font-size:15px;margin:0 0 10px">פרטי התלוש · ${esc(d.month)}${d.monthSource==="document"?" <span class=\"diff\">(מהמסמך)</span>":" <span class=\"diff\">(נבחר ידנית)</span>"}</h3>
     <div class="kv"><span>ברוטו מדווח</span><span>${sh(x.grossShekels)}</span></div>
     <div class="kv"><span>נטו מדווח</span><span>${sh(x.netShekels)}</span></div>
     ${x.employerName?`<div class="kv"><span>מעסיק</span><span>${esc(x.employerName)}</span></div>`:""}
@@ -1029,8 +1087,10 @@ function statementDraftHtml(d){
 }
 
 /* ---------- הגדרות: פרטי עבודה ומיסים ---------- */
+let leaveBalance=null;
 let wageProfile=null, taxProfile=null, entitlementsList=[], entitlementsMeta=null, selectedEnt=[];
 
+async function fetchLeave(){ leaveBalance=await api("/leave/balance"); }
 async function fetchWage(){ const d=await api("/wage/profile"); wageProfile=d.profile; }
 async function fetchTax(){ const d=await api("/tax/profile"); taxProfile=d.profile; }
 async function fetchEntitlements(){
@@ -1366,7 +1426,7 @@ async function loadAllData(){
   const jobs=[
     ["ימי עבודה",fetchEntries],["הוצאות",fetchExpenses],["קטגוריות",fetchCategories],
     ["מצב AI",fetchDocStatus],["תלושים",fetchPayslips],["פרופיל שכר",fetchWage],
-    ["פרופיל מס",fetchTax],["זכאויות",fetchEntitlements],
+    ["פרופיל מס",fetchTax],["זכאויות",fetchEntitlements],["יתרות",fetchLeave],
   ];
   const results=await Promise.allSettled(jobs.map(([,fn])=>fn()));
   const failed=results.map((r,i)=>r.status==="rejected"?jobs[i][0]:null).filter(Boolean);

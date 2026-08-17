@@ -31,13 +31,12 @@ function aiError(res, err) {
   return res.status(502).json({ error: err.message || "ניתוח המסמך נכשל." });
 }
 
-// POST /api/documents/payslip  (multipart: file, month)
+// POST /api/documents/payslip  (multipart: file, month?)
 async function analyzePayslip(req, res) {
-  const bad = requireMonth(req.body?.month);
-  if (bad) return res.status(400).json({ error: bad });
   if (!req.file) return res.status(400).json({ error: "לא צורף קובץ" });
+  // החודש מהטופס הוא **רמז בלבד** ומשמש רק אם לא ניתן לקרוא אותו מהמסמך.
+  const requestedMonth = MONTH_RE.test(String(req.body?.month || "")) ? req.body.month : null;
 
-  const month = req.body.month;
   let extracted, usage;
   try {
     ({ data: extracted, usage } = await extractPayslip(req.file.buffer, req.file.mimetype));
@@ -47,6 +46,18 @@ async function analyzePayslip(req, res) {
     req.file.buffer = null; // שחרור מפורש; אין עותק אחר בשום מקום
   }
 
+  // ⚠️ החודש שנקבע להצלבה הוא זה שכתוב **בתלוש**, לא זה שנבחר בתפריט.
+  // באג קודם השווה תלוש של יולי מול ימי אוגוסט כי הסתמכנו על התפריט.
+  // מסמך הוא מקור אמת חזק יותר מבחירה של אדם עייף.
+  const extractedMonth = MONTH_RE.test(String(extracted?.month || "")) ? extracted.month : null;
+  const month = extractedMonth || requestedMonth;
+
+  if (!month) {
+    return res.status(422).json({
+      error: "לא ניתן לזהות את חודש התלוש מהמסמך. בחר חודש ידנית ונסה שוב.",
+    });
+  }
+
   const workdays = await prisma.workDay.findMany({
     where: { userId: req.userId, date: { startsWith: month } },
     orderBy: { date: "asc" },
@@ -54,9 +65,23 @@ async function analyzePayslip(req, res) {
 
   const comparison = compareToJournal(extracted, workdays);
 
+  // אי-התאמה בין הבחירה לתלוש היא מידע חשוב, לא רעש: היא מסבירה למה
+  // ההצלבה נראית אחרת ממה שהמשתמש ציפה.
+  if (extractedMonth && requestedMonth && extractedMonth !== requestedMonth) {
+    comparison.alerts.unshift({
+      level: "לבדיקה",
+      field: "חודש",
+      message:
+        `בחרת ${requestedMonth} אבל בתלוש כתוב ${extractedMonth}. ` +
+        `ההצלבה בוצעה מול ${extractedMonth} — החודש שכתוב במסמך.`,
+    });
+  }
+
   res.json({
     draft: true,
     month,
+    requestedMonth,
+    monthSource: extractedMonth ? "document" : "manual",
     extracted,
     comparison,
     usage,
@@ -80,6 +105,8 @@ async function confirmPayslip(req, res) {
     deductions: JSON.stringify(extracted.deductions || {}),
     hoursReported: extracted.hoursReported ?? null,
     daysReported: extracted.daysReported ?? null,
+    vacationBalance: extracted.vacationBalanceDays ?? null,
+    sickBalance: extracted.sickBalanceDays ?? null,
     comparison: JSON.stringify(comparison?.journal || {}),
     alerts: JSON.stringify(comparison?.alerts || []),
     reportText: "",

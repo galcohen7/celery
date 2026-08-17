@@ -33,6 +33,8 @@ const SCHEMA = {
     hoursReported: nullableNum,
     daysReported: nullableInt,
     employerName: { anyOf: [{ type: "string" }, { type: "null" }] },
+    vacationBalanceDays: nullableNum,
+    sickBalanceDays: nullableNum,
     unreadableFields: {
       type: "array",
       items: { type: "string" },
@@ -41,7 +43,8 @@ const SCHEMA = {
   },
   required: [
     "month", "grossShekels", "netShekels", "deductions",
-    "hoursReported", "daysReported", "employerName", "unreadableFields",
+    "hoursReported", "daysReported", "employerName",
+    "vacationBalanceDays", "sickBalanceDays", "unreadableFields",
   ],
   additionalProperties: false,
 };
@@ -53,7 +56,9 @@ const SYSTEM = `אתה מחלץ נתונים מתלושי שכר ישראליי�
 - אל תחשב, אל תסיק ואל תשלים ערכים חסרים. שדה שאינו מופיע בתלוש הוא null.
 - שדה שמופיע אך אינו קריא בוודאות — החזר null ורשום את שמו ב-unreadableFields.
 - "מס בריאות" ו"ביטוח לאומי" הם שני ניכויים נפרדים בתלוש ישראלי. אל תאחד אותם.
-- תחת other אסוף ניכויים שאינם מס הכנסה, ביטוח לאומי, מס בריאות או פנסיה.`;
+- תחת other אסוף ניכויים שאינם מס הכנסה, ביטוח לאומי, מס בריאות או פנסיה.
+- יתרות חופשה ומחלה מופיעות בתלוש ישראלי בשורות כמו "יתרת חופשה", "יתרת מחלה",
+  "ימי חופשה לניצול" או "צבירת מחלה". החזר את **היתרה הנותרת**, לא את הניצול החודשי.`;
 
 const INSTRUCTION =
   "חלץ את השדות מתלוש השכר המצורף. אם מדובר בכמה עמודים, התייחס לכולם כתלוש אחד.";
