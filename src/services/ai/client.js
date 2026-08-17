@@ -13,6 +13,25 @@ const MAX_TOKENS = 16000;
 
 class AiUnavailableError extends Error {}
 class AiRefusedError extends Error {}
+class AiBillingError extends Error {}
+
+// יתרת קרדיט אפסית חוזרת כ-400 invalid_request_error רגיל, ולכן בלי טיפול
+// מפורש היא נראית כמו בקשה שגויה בקוד שלנו. זו שגיאת חשבון, לא באג.
+function translateApiError(err) {
+  const msg = err?.error?.error?.message || err?.message || "";
+  if (err?.status === 400 && /credit balance is too low/i.test(msg)) {
+    return new AiBillingError(
+      "אין יתרת קרדיט בחשבון ה-Claude API. יש לטעון קרדיט ב-console.anthropic.com תחת Billing."
+    );
+  }
+  if (err?.status === 401) {
+    return new AiUnavailableError("מפתח ה-API אינו תקין. יש לבדוק את ANTHROPIC_API_KEY.");
+  }
+  if (err?.status === 429) {
+    return new Error("חריגה ממגבלת הקצב של ה-API. נסה שוב בעוד דקה.");
+  }
+  return err;
+}
 
 let client = null;
 function getClient() {
@@ -46,15 +65,20 @@ function documentBlock(buffer, mimeType) {
 async function analyzeDocument({ buffer, mimeType, system, instruction, schema }) {
   const anthropic = getClient();
 
-  const response = await anthropic.messages.create({
-    model: MODEL,
-    max_tokens: MAX_TOKENS,
-    system,
-    messages: [
-      { role: "user", content: [documentBlock(buffer, mimeType), { type: "text", text: instruction }] },
-    ],
-    output_config: { format: { type: "json_schema", schema } },
-  });
+  let response;
+  try {
+    response = await anthropic.messages.create({
+      model: MODEL,
+      max_tokens: MAX_TOKENS,
+      system,
+      messages: [
+        { role: "user", content: [documentBlock(buffer, mimeType), { type: "text", text: instruction }] },
+      ],
+      output_config: { format: { type: "json_schema", schema } },
+    });
+  } catch (err) {
+    throw translateApiError(err);
+  }
 
   // חובה לפני קריאת content: סירוב מחזיר 200 עם content ריק או חלקי.
   if (response.stop_reason === "refusal") {
@@ -73,4 +97,4 @@ async function analyzeDocument({ buffer, mimeType, system, instruction, schema }
   };
 }
 
-module.exports = { analyzeDocument, isConfigured, MODEL, AiUnavailableError, AiRefusedError };
+module.exports = { analyzeDocument, isConfigured, MODEL, AiUnavailableError, AiRefusedError, AiBillingError };

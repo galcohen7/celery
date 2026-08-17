@@ -26,6 +26,7 @@ function requireMonth(month) {
 // ממיר שגיאות שירות לתשובות HTTP מובנות במקום 500 סתום
 function aiError(res, err) {
   if (err instanceof ai.AiUnavailableError) return res.status(503).json({ error: err.message });
+  if (err instanceof ai.AiBillingError) return res.status(402).json({ error: err.message });
   if (err instanceof ai.AiRefusedError) return res.status(422).json({ error: err.message });
   return res.status(502).json({ error: err.message || "ניתוח המסמך נכשל." });
 }
