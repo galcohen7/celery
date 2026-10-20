@@ -314,6 +314,60 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo',system-u
 .lock-toggle:hover{border-color:var(--indigo);color:var(--indigo);}
 .head-actions{display:flex;align-items:flex-end;gap:10px;}
 
+/* ===== אשף הרשמה ===== */
+.wiz-card{background:var(--surface);border-radius:20px;width:100%;max-width:400px;padding:26px 26px 22px;
+  box-shadow:0 24px 60px rgba(0,0,0,.32);}
+.wiz-logo{width:56px;height:56px;display:block;margin:0 auto 14px;}
+.wiz-dots{display:flex;gap:6px;justify-content:center;margin-bottom:20px;}
+.wiz-dots i{width:7px;height:7px;border-radius:99px;background:var(--line);transition:all .2s;}
+.wiz-dots i.on{background:var(--indigo);width:20px;}
+.wiz-dots i.done{background:var(--accent);}
+.wiz-card h2{font-family:'Rubik',sans-serif;font-weight:700;font-size:21px;margin:0 0 6px;line-height:1.35;}
+.wiz-sub{font-size:13.5px;color:var(--muted);margin:0 0 18px;line-height:1.55;}
+.wiz-actions{display:flex;gap:9px;margin-top:6px;}
+.wiz-actions .btn{flex:1;padding:13px;}
+.wiz-back{flex:0 0 auto!important;width:46px;background:var(--bg);color:var(--muted);}
+.wiz-back:hover{background:var(--line);}
+.pw-row{display:flex;gap:8px;align-items:stretch;}
+.pw-row .lock-input{flex:1;min-width:0;margin-bottom:0;}
+.pw-rule{font-size:11.5px;line-height:1.6;margin:8px 0 0;}
+.pw-rule b{display:block;color:var(--muted);font-weight:500;margin-bottom:3px;}
+.pw-rule span{display:block;color:var(--muted);transition:color .15s;}
+.pw-rule span.ok{color:var(--accent-deep);}
+.pw-rule span.bad{color:var(--danger);}
+.wiz-pick{display:flex;flex-direction:column;gap:9px;margin-bottom:4px;}
+.wiz-pick button{text-align:start;padding:14px 15px;border-radius:13px;border:1.5px solid var(--line);
+  background:#fff;cursor:pointer;font-family:'Heebo',sans-serif;transition:all .15s;}
+.wiz-pick button:hover{border-color:var(--indigo);background:var(--indigo-soft);}
+.wiz-pick button.on{border-color:var(--indigo);background:var(--indigo-soft);box-shadow:0 0 0 3px var(--indigo-soft);}
+.wiz-pick b{display:block;font-family:'Rubik',sans-serif;font-size:15px;color:var(--ink);margin-bottom:2px;}
+.wiz-pick small{color:var(--muted);font-size:12px;line-height:1.45;}
+.wiz-done{text-align:center;font-size:42px;line-height:1;margin:4px 0 14px;}
+.wiz-recap{background:var(--bg);border-radius:12px;padding:12px 14px;margin-bottom:16px;}
+.wiz-recap div{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:3px 0;}
+.wiz-recap span{color:var(--muted);}
+.wiz-recap b{font-family:'Rubik',sans-serif;font-weight:600;}
+
+/* ===== סיור מודרך ===== */
+.tour-card{background:var(--surface);border-radius:18px;width:100%;max-width:430px;padding:24px 24px 20px;
+  box-shadow:0 24px 60px rgba(0,0,0,.32);max-height:90vh;overflow-y:auto;}
+.tour-top{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.tour-icon{width:40px;height:40px;border-radius:12px;background:var(--indigo-soft);
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 auto;}
+.tour-step{font-size:11.5px;color:var(--muted);font-family:'Rubik',sans-serif;}
+.tour-card h2{font-family:'Rubik',sans-serif;font-weight:700;font-size:18px;margin:1px 0 0;line-height:1.3;}
+.tour-body{font-size:13.5px;line-height:1.7;color:var(--ink);}
+.tour-body p{margin:0 0 10px;}
+.tour-body b{font-weight:600;}
+.tour-body code{background:var(--bg);border-radius:5px;padding:1px 5px;font-family:'Rubik',monospace;font-size:12.5px;}
+.tour-tip{background:var(--accent-soft);color:var(--accent-deep);border-radius:10px;
+  padding:10px 12px;font-size:12.5px;line-height:1.6;margin-top:12px;}
+.tour-actions{display:flex;gap:9px;margin-top:18px;align-items:center;}
+.tour-actions .btn{flex:1;padding:12px;}
+.tour-skip{background:none;border:none;color:var(--muted);font-family:'Heebo',sans-serif;
+  font-size:12.5px;cursor:pointer;text-decoration:underline;padding:6px;flex:0 0 auto;}
+.tour-skip:hover{color:var(--ink);}
+
 .banner{background:var(--accent-soft);color:var(--accent-deep);font-size:12.5px;
   padding:10px 14px;border-radius:11px;margin-bottom:16px;text-align:center;}
 .banner.hidden{display:none;}
@@ -428,10 +482,6 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo',system-u
 </svg>
     <h2 id="authTitle">התחברות</h2>
     <p class="lock-sub" id="authSub"></p>
-    <div class="name-row" id="authNames" style="display:none">
-      <input type="text" id="authFirst" class="lock-input" placeholder="שם פרטי" autocomplete="given-name">
-      <input type="text" id="authLast" class="lock-input" placeholder="שם משפחה" autocomplete="family-name">
-    </div>
     <input type="email" id="authEmail" class="lock-input" placeholder="אימייל" autocomplete="username">
     <input type="text" id="authRtoken" class="lock-input" placeholder="קוד איפוס" style="display:none">
     <input type="password" id="authPw1" class="lock-input" placeholder="סיסמה" autocomplete="current-password">
@@ -441,6 +491,45 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo',system-u
     <button class="link-btn" id="authForgot" style="display:none">שכחתי סיסמה</button>
     <button class="link-btn" id="authAlt"></button>
     <p class="lock-note" id="authNote"></p>
+  </div>
+</div>
+
+<!-- ===== אשף הרשמה =====
+     חמישה שלבים עד לחשבון פעיל עם מקום עבודה. החשבון נוצר בשלב 2 ולא בסוף,
+     כדי ששלבי מקום העבודה יוכלו לקרוא ל-API מאומת. מי שנוטש באמצע נכנס
+     בפעם הבאה עם חשבון תקין, והאשף ממשיך משלב מקום העבודה. -->
+<div class="overlay lock hidden" id="wizOverlay">
+  <div class="wiz-card">
+    <img src="/celery-logo.svg" alt="Celery" class="wiz-logo">
+    <div class="wiz-dots" id="wizDots"></div>
+    <h2 id="wizTitle"></h2>
+    <p class="wiz-sub" id="wizSub"></p>
+    <div id="wizBody"></div>
+    <p class="lock-err" id="wizErr"></p>
+    <div class="wiz-actions">
+      <button class="btn wiz-back" id="wizBack" title="חזרה">→</button>
+      <button class="btn btn-primary" id="wizNext">הבא</button>
+    </div>
+    <button class="link-btn" id="wizToLogin">כבר יש לי חשבון — התחברות</button>
+  </div>
+</div>
+
+<!-- ===== סיור מודרך ===== -->
+<div class="overlay hidden" id="tourOverlay">
+  <div class="tour-card">
+    <div class="tour-top">
+      <div class="tour-icon" id="tourIcon"></div>
+      <div>
+        <div class="tour-step" id="tourStep"></div>
+        <h2 id="tourTitle"></h2>
+      </div>
+    </div>
+    <div class="tour-body" id="tourBody"></div>
+    <div class="tour-actions">
+      <button class="tour-skip" id="tourSkip">דלג</button>
+      <button class="btn wiz-back" id="tourBack" title="חזרה">→</button>
+      <button class="btn btn-primary" id="tourNext">הבא</button>
+    </div>
   </div>
 </div>
 
@@ -531,7 +620,7 @@ const BASE_RATE=40, WEEKEND_RATE=60, OT_MULT=1.25, OT_THRESHOLD_H=8;
 const pad=n=>String(n).padStart(2,"0");
 const dstr=(y,m,d)=>`${y}-${pad(m+1)}-${pad(d)}`;   // m 0-based
 const dowOf=ds=>{const[y,m,d]=ds.split("-").map(Number);return new Date(y,m-1,d).getDay();};
-const defaults=dow=> dow===5 ? {start:"15:00",end:"19:00"} : {start:"15:00",end:"23:00"};
+const defaults=()=>({start:"15:00",end:"23:00"});
 const toMin=t=>{const[h,m]=t.split(":").map(Number);return h*60+m;};
 
 function rateAt(baseDow,absMin){
@@ -542,14 +631,13 @@ function rateAt(baseDow,absMin){
 function computePay(ds,start,end){
   const baseDow=dowOf(ds);
   let s=toMin(start),e=toMin(end); if(e<=s)e+=1440;
-  const actualH=(e-s)/60; let fridayExtended=false;
-  if(baseDow===5&&23*60>e){e=23*60;fridayExtended=true;}
+  const actualH=(e-s)/60;
   const otStart=s+OT_THRESHOLD_H*60;
   let regBase=0,regWk=0,otBase=0,otWk=0,pay=0;
   for(let t=s;t<e;t++){const rate=rateAt(baseDow,t);const isOT=t>=otStart;
     pay+=(rate/60)*(isOT?OT_MULT:1);
     if(isOT){rate===WEEKEND_RATE?otWk++:otBase++;}else{rate===WEEKEND_RATE?regWk++:regBase++;}}
-  return {salary:Math.round(pay),actualH,paidH:(e-s)/60,fridayExtended,
+  return {salary:Math.round(pay),actualH,paidH:actualH,
     regBaseH:regBase/60,regWkH:regWk/60,otBaseH:otBase/60,otWkH:otWk/60};
 }
 const fmtMoney=n=>Number(n||0).toLocaleString("he-IL");
@@ -653,7 +741,7 @@ function renderCal(){
   calCount.innerHTML=`סה״כ מסומנים: <b>${n}</b> ימים`;
 }
 function addDay(ds){
-  const dow=dowOf(ds), def=defaults(dow), r=computePay(ds,def.start,def.end);
+  const dow=dowOf(ds), def=defaults(), r=computePay(ds,def.start,def.end);
   draftMap[ds]={id:ds,date:ds,dow,dayName:HEB_DAYS[dow],start:def.start,end:def.end,salary:r.salary};
 }
 function hasChanges(){
@@ -718,7 +806,7 @@ function editRecompute(setSalary){
   if(setSalary) eSalary.value=r.salary;
   eCalcSum.innerHTML=fmtMoney(setSalary?r.salary:(Number(eSalary.value)||0))+' <em>₪</em>';
   eCalcBreak.textContent=breakdownText(r);
-  eCalcNote.textContent=r.fridayExtended?("משמרת עד "+eEnd.value+" · שכר משולם עד 23:00 ("+fmtHours(r.paidH)+" שע׳)"):"";
+  eCalcNote.textContent="";
 }
 eStart.addEventListener("input",()=>editRecompute(true));
 eEnd.addEventListener("input",()=>editRecompute(true));
@@ -1089,9 +1177,21 @@ function statementDraftHtml(d){
 /* ---------- הגדרות: פרטי עבודה ומיסים ---------- */
 let leaveBalance=null;
 let wageProfile=null, taxProfile=null, entitlementsList=[], entitlementsMeta=null, selectedEnt=[];
+let jobs=[], needsOnboarding=false;
 
 async function fetchLeave(){ leaveBalance=await api("/leave/balance"); }
-async function fetchWage(){ const d=await api("/wage/profile"); wageProfile=d.profile; }
+// מקומות העבודה. `wageProfile` הוא תמיד המקום **הפעיל** — זה מה שמסכי
+// ההגדרות והתצוגה המקדימה עורכים.
+//
+// עד כאן הלקוח פנה ל-/api/wage/profile, נתיב שהוסר כשהשרת עבר לריבוי
+// מקומות עבודה. התוצאה הייתה 404 שנבלע בבאנר "חלק מהנתונים לא נטענו",
+// כך שמסך ההגדרות פשוט לא נטען ונראה כמו תקלת רשת.
+async function fetchJobs(){
+  const d=await api("/jobs");
+  jobs=d.jobs||[];
+  needsOnboarding=!!d.needsOnboarding;
+  wageProfile=jobs.find(j=>j.isActive)||jobs[0]||null;
+}
 async function fetchTax(){ const d=await api("/tax/profile"); taxProfile=d.profile; }
 async function fetchEntitlements(){
   const d=await api("/tax/entitlements");
@@ -1123,6 +1223,15 @@ function renderSettings(){
     <div class="panel-head"><div class="panel-title"><h2>פרטי עבודה</h2>
       <div class="panel-meta">התעריפים שלפיהם מחושב השכר</div></div></div>
 
+    <div class="grid2" style="margin:14px 0">
+      <div class="fg"><label for="defStart">שעת התחלה (ברירת מחדל)</label>
+        <input id="defStart" type="time" value="${w.defaultStart||"15:00"}"></div>
+      <div class="fg"><label for="defEnd">שעת סיום (ברירת מחדל)</label>
+        <input id="defEnd" type="time" value="${w.defaultEnd||"23:00"}"></div>
+    </div>
+    <small style="color:var(--muted);display:block;margin:-6px 0 4px">אלה השעות שכל יום חדש
+      נכנס איתן כשמסמנים אותו בלוח השנה. אפשר לשנות כל יום בנפרד אחר כך.</small>
+
     <div class="fg" style="margin:14px 0">
       <label>סוג שכר</label>
       <div class="mode-toggle wide" id="payType" data-mode="${w.payType}">
@@ -1139,13 +1248,9 @@ function renderSettings(){
       ${rateField("overtime","שעות נוספות",w.overtimeMode,w.overtimeValue,"החוק בישראל: 125% לשעתיים הראשונות. כאן מוחל מכפיל אחיד.")}
       ${rateField("weekend","סוף שבוע",w.weekendMode,w.weekendValue,"חל בחלון שישי 16:00 עד ראשון 08:00.")}
       ${rateField("holiday","חג",w.holidayMode,w.holidayValue,"חל על ימים שסומנו כחג.")}
-      <div class="grid2" style="margin-top:14px">
-        <div class="fg"><label for="otThreshold">סף שעות נוספות</label>
-          <input id="otThreshold" type="number" value="${w.overtimeThresholdHours}" step="0.5" min="0" max="24"></div>
-        <div class="fg"><label for="fridayUntil">שישי משולם עד</label>
-          <input id="fridayUntil" type="time" value="${w.fridayPaidUntil||""}"></div>
-      </div>
-      <small style="color:var(--muted);display:block;margin-top:4px">השאר את שדה שישי ריק כדי לבטל את ההארכה.</small>
+      <div class="fg" style="margin-top:14px"><label for="otThreshold">סף שעות נוספות</label>
+        <input id="otThreshold" type="number" value="${w.overtimeThresholdHours}" step="0.5" min="0" max="24"></div>
+      <small style="color:var(--muted);display:block;margin-top:4px">מעל הסף הזה, כל שעה משולמת לפי מכפיל השעות הנוספות.</small>
     </div>
 
     <div id="monthlyFields" style="display:${w.payType==="MONTHLY"?"block":"none"}">
@@ -1179,6 +1284,14 @@ function renderSettings(){
     <div class="modal-actions"><button class="btn btn-primary" id="saveTax">שמור הגדרות מס</button></div>
   </section>`;
 
+  contentEl.insertAdjacentHTML("beforeend",
+    `<section class="card" style="margin-top:16px">
+      <div class="panel-head"><div class="panel-title"><h2>עזרה</h2>
+        <div class="panel-meta">סיור קצר על מה שאפשר לעשות כאן</div></div></div>
+      <div class="modal-actions"><button class="btn" id="replayTour">▶ הפעל את הסיור המודרך</button></div>
+    </section>`);
+  $("replayTour").addEventListener("click",startTour);
+
   renderEntitlements();
   wirePreview();
   contentEl.querySelectorAll(".mode-toggle").forEach(tg=>{
@@ -1201,6 +1314,10 @@ function renderSettings(){
 function readWageForm(){
   const mode=id=>$(id).dataset.mode;
   return {
+    // השם אינו נערך במסך הזה, אבל PUT /api/jobs/:id דורש אותו — בלעדיו
+    // השמירה נופלת על "יש לתת שם למקום העבודה".
+    name:wageProfile?.name||"מקום עבודה",
+    defaultStart:$("defStart").value, defaultEnd:$("defEnd").value,
     payType:mode("payType"),
     hourlyRate:Number($("hourlyRate").value)||0,
     monthlySalary:$("monthlySalary")?.value===""?null:Number($("monthlySalary")?.value),
@@ -1208,7 +1325,6 @@ function readWageForm(){
     weekendMode:mode("weekendMode"), weekendValue:Number($("weekendValue").value)||0,
     holidayMode:mode("holidayMode"), holidayValue:Number($("holidayValue").value)||0,
     overtimeThresholdHours:Number($("otThreshold").value)||0,
-    fridayPaidUntil:$("fridayUntil").value||"",
     weekendStartDow:wageProfile.weekendStartDow, weekendStartHour:wageProfile.weekendStartHour,
     weekendEndDow:wageProfile.weekendEndDow, weekendEndHour:wageProfile.weekendEndHour,
   };
@@ -1217,13 +1333,13 @@ function readWageForm(){
 let previewTimer=null;
 function schedulePreview(){ clearTimeout(previewTimer); previewTimer=setTimeout(runPreview,300); }
 function wirePreview(){
-  ["hourlyRate","overtimeValue","weekendValue","holidayValue","otThreshold","fridayUntil","monthlySalary"]
+  ["hourlyRate","overtimeValue","weekendValue","holidayValue","otThreshold","monthlySalary","defStart","defEnd"]
     .forEach(id=>$(id)?.addEventListener("input",schedulePreview));
 }
 async function runPreview(){
   const box=$("wagePreview"); if(!box) return;
   try{
-    const d=await api("/wage/preview",{method:"POST",body:JSON.stringify({profile:readWageForm()})});
+    const d=await api("/jobs/preview",{method:"POST",body:JSON.stringify({profile:readWageForm()})});
     box.innerHTML=`<h3>כך ייראו ימים חדשים</h3>`+
       d.samples.map(s=>`<div class="kv"><span>${esc(s.label)} <span class="diff">${esc(s.shift)}</span></span>
         <span>${fmtMoney(s.salary)} ₪</span></div>`).join("");
@@ -1254,8 +1370,9 @@ function renderEntitlements(){
 
 async function saveWage(){
   try{
-    const d=await api("/wage/profile",{method:"PUT",body:JSON.stringify(readWageForm())});
-    wageProfile=d.profile; toast("פרטי העבודה נשמרו");
+    if(!wageProfile) return toast("אין מקום עבודה לעריכה");
+    const d=await api("/jobs/"+wageProfile.id,{method:"PUT",body:JSON.stringify(readWageForm())});
+    wageProfile=d.job; toast("פרטי העבודה נשמרו");
   }catch(e){ toast(e.message); }
 }
 async function saveTax(){
@@ -1384,10 +1501,325 @@ $("importFile").addEventListener("change",e=>{
   rd.readAsText(f);
 });
 
+/* ---------- אשף ההרשמה ----------
+   סדר השלבים: שם → חשבון → שם עבודה → סוג שכר → תעריף → סיום.
+
+   ⚠️ החשבון נוצר בשלב **החשבון** ולא בסוף. הסיבה: יצירת מקום עבודה דורשת
+   טוקן, ואי אפשר לקרוא ל-POST /api/jobs לפני שיש משתמש. המחיר הוא מצב
+   ביניים — חשבון בלי מקום עבודה — והוא מטופל: ה-API מחזיר needsOnboarding,
+   ו-init() מחזיר את האשף לשלב שם העבודה בהתחברות הבאה.
+
+   כלל הסיסמה מוגדר כאן **ובשרת** (authController.passwordError). הכפילות
+   מכוונת: הלקוח נותן משוב חי בזמן ההקלדה, השרת הוא זה שאוכף. */
+const PW_MIN=6;
+const PW_CHARS=/^[\x21-\x7E]+$/;   // ASCII מודפס: אנגלית, ספרות, סימנים. בלי רווח.
+const PW_RULE_TEXT="אותיות באנגלית, ספרות וסימנים — ללא עברית וללא רווחים";
+
+function pwCheck(pw){
+  return { len: pw.length>=PW_MIN, chars: pw.length>0 && PW_CHARS.test(pw) };
+}
+// `short` — כשרשימת הכללים החיה מוצגת ממילא (באשף), מספיקה הודעה קצרה;
+// כפילות של אותו טקסט פעמיים זו על זו נקראת כמו שתי שגיאות שונות.
+function pwError(pw,short){
+  const c=pwCheck(pw);
+  if(c.len && c.chars) return null;
+  if(short) return "הסיסמה לא עומדת בתנאים המפורטים למטה.";
+  if(!c.len) return "הסיסמה חייבת "+PW_MIN+" תווים לפחות.";
+  return "הסיסמה יכולה לכלול "+PW_RULE_TEXT+".";
+}
+
+const wizOverlay=$("wizOverlay"),wizDots=$("wizDots"),wizTitle=$("wizTitle"),wizSub=$("wizSub"),
+  wizBody=$("wizBody"),wizErr=$("wizErr"),wizBack=$("wizBack"),wizNext=$("wizNext"),wizToLogin=$("wizToLogin");
+
+let wiz=null;
+const blankWiz=()=>({step:0,name:"",email:"",password:"",showPw:false,
+  jobName:"",payType:"HOURLY",hourlyRate:"40",monthlySalary:"",accountCreated:false});
+
+const firstWord=(n)=>String(n).trim().split(/\s+/)[0]||"";
+function focusEl(id){ setTimeout(()=>$(id)?.focus(),60); }
+
+function paintPwRule(){
+  const el=$("wPwRule"); if(!el) return;
+  const c=pwCheck(wiz.password), touched=wiz.password.length>0;
+  const cls=(ok)=> !touched ? "" : (ok?"ok":"bad");
+  const mark=(ok)=> !touched ? "•" : (ok?"✓":"✗");
+  el.innerHTML='<b>הסיסמה צריכה:</b>'+
+    '<span class="'+cls(c.len)+'">'+mark(c.len)+' '+PW_MIN+' תווים לפחות</span>'+
+    '<span class="'+cls(c.chars)+'">'+mark(c.chars)+' '+PW_RULE_TEXT+'</span>';
+}
+
+const WIZ_STEPS=[
+  /* 0 — שם */ {
+    title:()=>"ברוך/ה הבא ל-CELERY!",
+    sub:()=>"מה שמך?",
+    body:()=>'<input type="text" id="wName" class="lock-input" placeholder="השם שלך" '+
+             'autocomplete="name" maxlength="80" value="'+esc(wiz.name)+'">',
+    wire:()=>{ $("wName").addEventListener("input",e=>wiz.name=e.target.value); focusEl("wName"); },
+    check:()=> wiz.name.trim() ? null : "יש להזין שם",
+  },
+  /* 1 — חשבון */ {
+    title:()=>"נעים להכיר, "+firstWord(wiz.name),
+    sub:()=>"אנא הכנס/י מייל וסיסמה להרשמה.",
+    body:()=>
+      '<input type="email" id="wEmail" class="lock-input" placeholder="אימייל" '+
+        'autocomplete="email" value="'+esc(wiz.email)+'">'+
+      '<div class="pw-row">'+
+        '<input type="'+(wiz.showPw?"text":"password")+'" id="wPw" class="lock-input" '+
+          'placeholder="סיסמה" autocomplete="new-password" value="'+esc(wiz.password)+'">'+
+        '<button type="button" class="lock-toggle" id="wPwEye" title="הצג סיסמה">'+
+          (wiz.showPw?"🙈":"👁")+'</button>'+
+      '</div>'+
+      '<p class="pw-rule" id="wPwRule"></p>',
+    wire:()=>{
+      $("wEmail").addEventListener("input",e=>wiz.email=e.target.value);
+      $("wPw").addEventListener("input",e=>{wiz.password=e.target.value;paintPwRule();});
+      // הצגת הסיסמה במקום שדה אימות: שומר על שני שדות כמו שתוכנן, ומונע
+      // טעות הקלדה שנועלת חשבון כל עוד שחזור סיסמה במייל לא מחובר.
+      $("wPwEye").addEventListener("click",()=>{wiz.showPw=!wiz.showPw;wizRender();focusEl("wPw");});
+      paintPwRule(); focusEl(wiz.email?"wPw":"wEmail");
+    },
+    check:()=>{
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(wiz.email.trim())) return "אימייל לא תקין";
+      return pwError(wiz.password,true);
+    },
+    submit:async()=>{
+      const d=await api("/auth/register",{method:"POST",
+        body:JSON.stringify({name:wiz.name.trim(),email:wiz.email.trim(),password:wiz.password})});
+      setToken(d.token); currentUser=d.user; wiz.accountCreated=true;
+    },
+  },
+  /* 2 — שם העבודה */ {
+    title:()=>"בוא נתחיל!",
+    sub:()=>"הקלד/י את שם העבודה:",
+    body:()=>'<input type="text" id="wJob" class="lock-input" placeholder="לדוגמה: מסעדת השף" '+
+             'maxlength="60" value="'+esc(wiz.jobName)+'">',
+    wire:()=>{ $("wJob").addEventListener("input",e=>wiz.jobName=e.target.value); focusEl("wJob"); },
+    check:()=> wiz.jobName.trim() ? null : "יש להזין שם למקום העבודה",
+  },
+  /* 3 — סוג שכר */ {
+    title:()=>"איך משולם השכר?",
+    sub:()=>"אפשר לשנות את זה בכל רגע בהגדרות.",
+    body:()=>
+      '<div class="wiz-pick" id="wPay">'+
+        '<button type="button" data-v="HOURLY" class="'+(wiz.payType==="HOURLY"?"on":"")+'">'+
+          '<b>שכר שעתי</b><small>משולם לפי שעות. השכר מחושב אוטומטית מכל משמרת שתזין.</small></button>'+
+        '<button type="button" data-v="MONTHLY" class="'+(wiz.payType==="MONTHLY"?"on":"")+'">'+
+          '<b>שכר גלובלי (חודשי)</b><small>סכום קבוע בחודש. המשמרות עדיין נרשמות — כדי לאמת שהתלוש תואם.</small>'+
+        '</button>'+
+      '</div>',
+    wire:()=>{
+      $("wPay").addEventListener("click",e=>{
+        const b=e.target.closest("button[data-v]"); if(!b) return;
+        wiz.payType=b.dataset.v; wizRender();
+      });
+    },
+    check:()=>null,
+  },
+  /* 4 — תעריף */ {
+    title:()=> wiz.payType==="HOURLY" ? "כמה את/ה מרוויח/ה לשעה?" : "מה השכר החודשי שלך?",
+    sub:()=> wiz.payType==="HOURLY"
+      ? "תעריף הבסיס. סוף שבוע וחג מחושבים כאחוז ממנו."
+      : "הסכום ברוטו, לפני ניכויים.",
+    body:()=> wiz.payType==="HOURLY"
+      ? '<input type="number" id="wRate" class="lock-input" placeholder="40" inputmode="decimal" '+
+        'step="0.01" min="0" value="'+esc(wiz.hourlyRate)+'"><p class="lock-note">₪ לשעה</p>'
+      : '<input type="number" id="wMonthly" class="lock-input" placeholder="12000" inputmode="decimal" '+
+        'step="0.01" min="0" value="'+esc(wiz.monthlySalary)+'"><p class="lock-note">₪ לחודש (ברוטו)</p>',
+    wire:()=>{
+      const id=wiz.payType==="HOURLY"?"wRate":"wMonthly";
+      $(id).addEventListener("input",e=>{
+        if(wiz.payType==="HOURLY") wiz.hourlyRate=e.target.value; else wiz.monthlySalary=e.target.value;
+      });
+      focusEl(id);
+    },
+    check:()=>{
+      const v=Number(wiz.payType==="HOURLY"?wiz.hourlyRate:wiz.monthlySalary);
+      if(!Number.isFinite(v)||v<=0) return "יש להזין סכום תקין";
+      return null;
+    },
+    submit:async()=>{
+      // שאר התעריפים נשמרים בברירות המחדל של השרת (נוספות 125%, סופ״ש וחג
+      // 150%). המשתמש לא נשאל עליהם כאן בכוונה — הסיור מראה איפה לערוך אותם,
+      // וזה עדיף על שש שאלות לפני שראה את האפליקציה בכלל.
+      await api("/jobs",{method:"POST",body:JSON.stringify({
+        name:wiz.jobName.trim(),
+        payType:wiz.payType,
+        hourlyRate:wiz.payType==="HOURLY"?Number(wiz.hourlyRate):40,
+        monthlySalary:wiz.payType==="MONTHLY"?Number(wiz.monthlySalary):null,
+      })});
+      await loadAllData();
+    },
+  },
+  /* 5 — סיום */ {
+    title:()=>"הכול מוכן!",
+    sub:()=>"החשבון שלך פעיל. רוצה סיור קצר על מה שאפשר לעשות כאן?",
+    body:()=>
+      '<div class="wiz-done">🎉</div>'+
+      '<div class="wiz-recap">'+
+        '<div><span>שם</span><b>'+esc(wiz.name.trim())+'</b></div>'+
+        '<div><span>מקום עבודה</span><b>'+esc(wiz.jobName.trim())+'</b></div>'+
+        '<div><span>שכר</span><b>'+(wiz.payType==="HOURLY"
+          ? esc(wiz.hourlyRate)+" ₪ לשעה"
+          : fmtMoney(Number(wiz.monthlySalary))+" ₪ לחודש")+'</b></div>'+
+      '</div>'+
+      '<button class="btn btn-primary" id="wTourYes" style="width:100%;padding:13px">כן, קח/י אותי לסיור</button>'+
+      '<button class="link-btn" id="wTourNo">לא תודה, אתחיל לבד</button>',
+    wire:()=>{
+      $("wTourYes").addEventListener("click",()=>{ closeWizard(); startTour(); });
+      $("wTourNo").addEventListener("click",()=>{ closeWizard(); toast("אפשר להפעיל את הסיור בכל רגע מההגדרות"); });
+    },
+    hideFooter:true,
+  },
+];
+
+function wizRender(){
+  const st=WIZ_STEPS[wiz.step];
+  wizDots.innerHTML=WIZ_STEPS.slice(0,5).map((_,i)=>
+    '<i class="'+(i===wiz.step?"on":i<wiz.step?"done":"")+'"></i>').join("");
+  wizTitle.textContent=st.title();
+  wizSub.textContent=st.sub();
+  wizBody.innerHTML=st.body();
+  wizErr.textContent="";
+
+  const footer=!st.hideFooter;
+  wizNext.style.display=footer?"block":"none";
+  // אחרי יצירת החשבון אין לאן לחזור — שלבי השם והחשבון כבר בוצעו ואינם הפיכים.
+  const canBack = footer && wiz.step>0 && !(wiz.accountCreated && wiz.step<=2);
+  wizBack.style.display=canBack?"block":"none";
+  wizNext.textContent = wiz.step===4 ? "סיום" : "הבא";
+  wizToLogin.style.display = (wiz.step<=1 && !wiz.accountCreated) ? "block" : "none";
+
+  st.wire?.();
+}
+
+async function wizAdvance(){
+  const st=WIZ_STEPS[wiz.step];
+  const err=st.check?.();
+  if(err){ wizErr.textContent=err; return; }
+  wizNext.disabled=true; wizErr.textContent="";
+  try{
+    await st.submit?.();
+    wiz.step++;
+    wizRender();
+  }catch(e){
+    wizErr.textContent = e.message==="Failed to fetch" ? "אין חיבור לשרת. ודא שהשרת רץ." : e.message;
+  }finally{ wizNext.disabled=false; }
+}
+
+function openWizard(step){
+  if(!wiz || step===0) wiz=blankWiz();
+  if(step!=null) wiz.step=step;
+  authOverlay.classList.add("hidden");
+  $("logoutBtn").style.display="none";
+  wizOverlay.classList.remove("hidden");
+  wizRender();
+}
+// ממשיך אשף שנקטע: החשבון כבר קיים, חסר רק מקום עבודה.
+function resumeWizard(){
+  wiz=blankWiz();
+  wiz.name=currentUser?.displayName||"";
+  wiz.accountCreated=true;
+  openWizard(2);
+}
+function closeWizard(){
+  wizOverlay.classList.add("hidden");
+  loadApp();
+}
+
+wizNext.addEventListener("click",wizAdvance);
+wizBack.addEventListener("click",()=>{ if(wiz.step>0){ wiz.step--; wizRender(); } });
+wizToLogin.addEventListener("click",()=>{ wizOverlay.classList.add("hidden"); showAuth("login"); });
+wizBody.addEventListener("keydown",e=>{
+  if(e.key==="Enter" && e.target.tagName==="INPUT"){ e.preventDefault(); wizAdvance(); }
+});
+
+/* ---------- סיור מודרך ----------
+   כל שלב מחליף את התצוגה למסך שעליו הוא מדבר, כדי שההסבר יינתן מול המסך
+   האמיתי ולא מול תיאור שלו. */
+const TOUR=[
+  { icon:"📅", view:"salary", title:"יומן ימי העבודה",
+    html:'<p>הלב של האפליקציה. לוחצים על <b>＋ הוסף ימים</b> ונפתח לוח שנה מלא — '+
+         'לוחצים על כל יום שעבדת בו, והוא נצבע.</p>'+
+         '<p>כל יום נכנס עם <b>שעות ברירת המחדל</b> והשכר מחושב מיד. אפשר לערוך יום בודד '+
+         'בלחיצה על העיפרון שעליו, לשנות שעות או להזין סכום ידנית.</p>'+
+         '<div class="tour-tip">סכום שהזנת ידנית לא נדרס לעולם. גם אם תשנה תעריפים בהמשך, '+
+         'ימים קיימים נשארים בדיוק כפי שהם.</div>' },
+
+  { icon:"⏰", view:"settings", title:"שעות ברירת מחדל",
+    html:'<p>ב<b>פרטי עבודה</b> יש <code>שעת התחלה</code> ו-<code>שעת סיום</code> '+
+         'שמוזנות אוטומטית לכל יום חדש שתסמן בלוח השנה.</p>'+
+         '<p>ברירת המחדל היא <code>15:00–23:00</code>. אם המשמרת הרגילה שלך אחרת — שנה כאן פעם אחת, '+
+         'וכל יום שתסמן מכאן והלאה ייכנס עם השעות הנכונות.</p>' },
+
+  { icon:"💰", view:"settings", title:"תעריף הבסיס",
+    html:'<p>התעריף שהזנת בהרשמה יושב ב<b>תעריף בסיס (₪ לשעה)</b>, ואפשר לשנות אותו בכל רגע.</p>'+
+         '<p>הוא הבסיס לכל שאר החישובים: סוף שבוע וחג מוגדרים כ<b>אחוז ממנו</b>, כך ששינוי התעריף '+
+         'מתגלגל לכל השאר אוטומטית.</p>'+
+         '<div class="tour-tip">בתחתית הקטע יש <b>תצוגה מקדימה</b> חיה — כמה יוצא יום חול, שישי, '+
+         'שבת וחג לפי מה שהזנת, עוד לפני שמירה.</div>' },
+
+  { icon:"📈", view:"settings", title:"שעות נוספות, סוף שבוע וחג",
+    html:'<p>שלושת השדות האלה כבר מלאים בערכי ברירת מחדל — <b>לא צריך להגדיר אותם כדי להתחיל</b>:</p>'+
+         '<p>• <b>שעות נוספות — 125%</b>, מעל 8 שעות ביום<br>'+
+         '• <b>סוף שבוע — 150%</b>, בחלון שישי 16:00 עד ראשון 08:00<br>'+
+         '• <b>חג — 150%</b>, על ימים שסימנת כחג</p>'+
+         '<p>כל אחד ניתן לעריכה, ואפשר להחליף בין <b>אחוז מהבסיס</b> לבין <b>סכום קבוע בשקלים לשעה</b> '+
+         'בלחיצה על המתג שליד השדה.</p>' },
+
+  { icon:"🧾", view:"settings", title:"זכאויות ונקודות זיכוי",
+    html:'<p>בקטע <b>מיסים</b> יש צ׳ק-ליסט זכאויות — תושב ישראל, אישה, תואר אקדמי ועוד. '+
+         'סימון שלהן מחשב את מספר <b>נקודות הזיכוי</b> אוטומטית.</p>'+
+         '<p>זכאויות שתלויות בנתונים אישיים (חייל משוחרר, עולה חדש, הורה יחיד) מסומנות '+
+         'כ<b>דורשות אימות</b> ומפנות לסימולטור הרשמי של רשות המסים — במקום לנחש מספר.</p>'+
+         '<div class="tour-tip">הנתונים משמשים להערכת הניכויים בבדיקת התלוש. '+
+         'זו בדיקת שפיות, לא ייעוץ מס.</div>' },
+
+  { icon:"🧮", view:"expenses", title:"מעקב הוצאות",
+    html:'<p>רושמים הוצאה בתיאור חופשי, והמערכת <b>מסווגת אותה לקטגוריה לבד</b> — '+
+         '"רמי לוי" נכנס למזון, "פרטנר" לתקשורת.</p>'+
+         '<p>הסיווג הוא הצעה בלבד; אפשר לשנות אותו תמיד, והבחירה שלך גוברת.</p>' },
+
+  { icon:"📄", view:"documents", title:"בדיקת תלוש שכר",
+    html:'<p>גוררים לכאן תלוש (PDF או צילום), והמערכת מחלצת ממנו ברוטו, נטו, ניכויים וימי עבודה — '+
+         'ואז <b>מצליבה אותם מול היומן שלך</b>.</p>'+
+         '<p>מה שלא מסתדר מסומן כ<b>לבדיקה</b> או <b>חריג</b>, עם הסבר על הפער.</p>'+
+         '<div class="tour-tip"><b>התלוש עצמו לא נשמר.</b> הוא מנותח בזיכרון ונמחק — '+
+         'רק המספרים שאישרת נשמרים.</div>' },
+];
+
+const tourOverlay=$("tourOverlay");
+let tourIdx=0;
+
+function tourRender(){
+  const t=TOUR[tourIdx];
+  if(t.view && view!==t.view) setView(t.view);
+  $("tourIcon").textContent=t.icon;
+  $("tourStep").textContent="שלב "+(tourIdx+1)+" מתוך "+TOUR.length;
+  $("tourTitle").textContent=t.title;
+  $("tourBody").innerHTML=t.html;
+  $("tourBack").style.display=tourIdx>0?"block":"none";
+  $("tourNext").textContent=tourIdx===TOUR.length-1?"סיימתי":"הבא";
+}
+function startTour(){
+  tourIdx=0;
+  tourOverlay.classList.remove("hidden");
+  tourRender();
+}
+function endTour(){
+  tourOverlay.classList.add("hidden");
+  setView("salary");
+  toast("אפשר להריץ את הסיור שוב מההגדרות");
+}
+$("tourNext").addEventListener("click",()=>{
+  if(tourIdx===TOUR.length-1) return endTour();
+  tourIdx++; tourRender();
+});
+$("tourBack").addEventListener("click",()=>{ if(tourIdx>0){tourIdx--;tourRender();} });
+$("tourSkip").addEventListener("click",endTour);
+
 /* ---------- התחברות / הרשמה / שחזור סיסמה ---------- */
 const authOverlay=$("authOverlay"),authTitle=$("authTitle"),authSub=$("authSub"),
   authEmail=$("authEmail"),authPw1=$("authPw1"),authPw2=$("authPw2"),authRtoken=$("authRtoken"),
-  authFirst=$("authFirst"),authLast=$("authLast"),authNames=$("authNames"),
   authErr=$("authErr"),authBtn=$("authBtn"),authAlt=$("authAlt"),authForgot=$("authForgot"),
   authNote=$("authNote"),bannerEl=$("banner"),taglineEl=$("tagline");
 let authMode="login";
@@ -1396,23 +1828,20 @@ const TAGLINE="יומן שכר ומעקב הוצאות";
 function showAuth(mode){
   authMode=mode; authErr.textContent="";
   authPw1.value=""; authPw2.value=""; authRtoken.value="";
-  authFirst.value=""; authLast.value="";
   $("logoutBtn").style.display="none";
   const show=(el,on)=>el.style.display=on?"block":"none";
   const M={
-    login:{t:"התחברות",s:"היכנס עם האימייל והסיסמה שלך.",names:0,email:1,rtoken:0,pw1:1,pw2:0,b:"כניסה",alt:"אין לך חשבון? הרשמה",forgot:1,n:""},
-    register:{t:"הרשמה",s:"פתח חשבון חדש — נעים להכיר.",names:1,email:1,rtoken:0,pw1:1,pw2:1,b:"צור חשבון",alt:"כבר יש חשבון? התחברות",forgot:0,n:"הסיסמה נשמרת מוצפנת (hash) ולא כטקסט גלוי."},
-    forgot:{t:"שחזור סיסמה",s:"הזן את האימייל שלך לקבלת קוד איפוס.",names:0,email:1,rtoken:0,pw1:0,pw2:0,b:"שלח קוד איפוס",alt:"חזרה להתחברות",forgot:0,n:""},
-    reset:{t:"סיסמה חדשה",s:"הזן את קוד האיפוס וקבע סיסמה חדשה.",names:0,email:0,rtoken:1,pw1:1,pw2:1,b:"עדכן סיסמה",alt:"חזרה להתחברות",forgot:0,n:""}
+    login:{t:"התחברות",s:"היכנס עם האימייל והסיסמה שלך.",email:1,rtoken:0,pw1:1,pw2:0,b:"כניסה",alt:"אין לך חשבון? הרשמה",forgot:1,n:""},
+    forgot:{t:"שחזור סיסמה",s:"הזן את האימייל שלך לקבלת קוד איפוס.",email:1,rtoken:0,pw1:0,pw2:0,b:"שלח קוד איפוס",alt:"חזרה להתחברות",forgot:0,n:""},
+    reset:{t:"סיסמה חדשה",s:"הזן את קוד האיפוס וקבע סיסמה חדשה.",email:0,rtoken:1,pw1:1,pw2:1,b:"עדכן סיסמה",alt:"חזרה להתחברות",forgot:0,n:""}
   }[mode];
   authTitle.textContent=M.t; authSub.textContent=M.s;
-  authNames.style.display=M.names?"flex":"none";   // שורת השמות היא flex, לא block
   show(authEmail,M.email); show(authRtoken,M.rtoken); show(authPw1,M.pw1); show(authPw2,M.pw2);
   authBtn.textContent=M.b; authAlt.textContent=M.alt;
   authForgot.style.display=M.forgot?"block":"none";
   authNote.textContent=M.n;
   authOverlay.classList.remove("hidden");
-  setTimeout(()=>{(M.names?authFirst:M.email?authEmail:authRtoken).focus?.();},50);
+  setTimeout(()=>{(M.email?authEmail:authRtoken).focus?.();},50);
 }
 function greet(){
   taglineEl.textContent = currentUser ? ("שלום, "+currentUser.displayName) : TAGLINE;
@@ -1425,7 +1854,7 @@ function greet(){
 async function loadAllData(){
   const jobs=[
     ["ימי עבודה",fetchEntries],["הוצאות",fetchExpenses],["קטגוריות",fetchCategories],
-    ["מצב AI",fetchDocStatus],["תלושים",fetchPayslips],["פרופיל שכר",fetchWage],
+    ["מצב AI",fetchDocStatus],["תלושים",fetchPayslips],["מקומות עבודה",fetchJobs],
     ["פרופיל מס",fetchTax],["זכאויות",fetchEntitlements],["יתרות",fetchLeave],
   ];
   const results=await Promise.allSettled(jobs.map(([,fn])=>fn()));
@@ -1444,33 +1873,32 @@ function loadApp(){
 }
 function setToken(t){ token=t; localStorage.setItem(TOKEN_KEY,t); }
 
+// ההרשמה עברה לאשף רב-שלבי. מצב "register" בכרטיס הזה כבר לא בשימוש,
+// והכפתור מוביל לאשף.
 authAlt.addEventListener("click",()=>{
-  showAuth(authMode==="login"?"register":"login");
+  if(authMode==="login"){ openWizard(0); return; }
+  showAuth("login");
 });
 authForgot.addEventListener("click",()=>showAuth("forgot"));
 
 authBtn.addEventListener("click",async()=>{
   authErr.textContent="";
   const email=authEmail.value.trim(), p1=authPw1.value, p2=authPw2.value, rt=authRtoken.value.trim();
-  const first=authFirst.value.trim(), last=authLast.value.trim();
   authBtn.disabled=true;
   try{
     if(authMode==="login"){
       const d=await api("/auth/login",{method:"POST",body:JSON.stringify({email,password:p1})});
-      setToken(d.token); currentUser=d.user; await loadAllData(); loadApp();
-    }else if(authMode==="register"){
-      if(!first||!last){ authErr.textContent="יש למלא שם פרטי ושם משפחה"; return; }
-      if(p1.length<6){ authErr.textContent="הסיסמה חייבת 6 תווים לפחות"; return; }
-      if(p1!==p2){ authErr.textContent="הסיסמאות אינן תואמות"; return; }
-      const d=await api("/auth/register",{method:"POST",body:JSON.stringify({firstName:first,lastName:last,email,password:p1})});
-      setToken(d.token); currentUser=d.user; await loadAllData(); loadApp(); toast("החשבון נוצר, ברוך הבא "+d.user.displayName);
+      setToken(d.token); currentUser=d.user; await loadAllData();
+      // חשבון שנפתח אך האשף בו נקטע לפני מקום העבודה — ממשיכים מאיפה שנעצר
+      if(needsOnboarding) resumeWizard(); else loadApp();
     }else if(authMode==="forgot"){
       const d=await api("/auth/forgot-password",{method:"POST",body:JSON.stringify({email})});
       showAuth("reset");
       if(d.devToken){ authRtoken.value=d.devToken; authNote.textContent="מצב פיתוח: קוד האיפוס מולא אוטומטית."; }
       else authNote.textContent="אם האימייל רשום, נשלח אליו קוד איפוס.";
     }else if(authMode==="reset"){
-      if(p1.length<6){ authErr.textContent="הסיסמה חייבת 6 תווים לפחות"; return; }
+      const pe=pwError(p1);
+      if(pe){ authErr.textContent=pe; return; }
       if(p1!==p2){ authErr.textContent="הסיסמאות אינן תואמות"; return; }
       await api("/auth/reset-password",{method:"POST",body:JSON.stringify({token:rt,password:p1})});
       showAuth("login"); toast("הסיסמה עודכנה, אפשר להתחבר");
@@ -1480,10 +1908,12 @@ authBtn.addEventListener("click",async()=>{
       : (e.message==="Failed to fetch" ? "אין חיבור לשרת. ודא שהשרת רץ." : e.message);
   }finally{ authBtn.disabled=false; }
 });
-[authFirst,authLast,authEmail,authRtoken,authPw1,authPw2].forEach(inp=>inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();authBtn.click();}}));
+[authEmail,authRtoken,authPw1,authPw2].forEach(inp=>inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();authBtn.click();}}));
 
 $("logoutBtn").addEventListener("click",()=>{
   token=null; currentUser=null; localStorage.removeItem(TOKEN_KEY);
+  wizOverlay.classList.add("hidden"); tourOverlay.classList.add("hidden");
+  wiz=null; jobs=[]; wageProfile=null; needsOnboarding=false;
   entries=[]; expenses=[]; expSelectedKey=null; selectedKey=null;
   contentEl.innerHTML=""; grandEl.style.display="none"; greet();
   setView("salary");   // חשבון הבא מתחיל מהתצוגה הראשית
@@ -1498,7 +1928,8 @@ async function init(){
     // הטוקן הוא מקור האמת לזהות — שולפים את המשתמש מהשרת ולא מ-localStorage,
     // כדי שרענון דף יציג את הברכה הנכונה גם אחרי החלפת חשבון.
     const d=await api("/auth/me"); currentUser=d.user;
-    await loadAllData(); loadApp();
+    await loadAllData();
+    if(needsOnboarding) resumeWizard(); else loadApp();
   }
   catch(e){
     if(e.message==="unauthorized"){ showAuth("login"); }

@@ -5,7 +5,7 @@ const { buildBalances } = require("../services/leave");
 async function balance(req, res) {
   const [latest, wage, months] = await Promise.all([
     prisma.payslipAnalysis.findFirst({ where: { userId: req.userId }, orderBy: { month: "desc" } }),
-    prisma.wageProfile.findUnique({ where: { userId: req.userId } }),
+    prisma.job.findFirst({ where: { userId: req.userId, isActive: true, archivedAt: null } }),
     prisma.workDay.findMany({ where: { userId: req.userId }, select: { date: true } }),
   ]);
   // חודשים שיש בהם לפחות יום עבודה אחד ביומן

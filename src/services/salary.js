@@ -1,9 +1,16 @@
 // מנוע חישוב השכר.
 //
-// עד שלב B2 הערכים היו קבועים בקוד. עכשיו הם מגיעים מ-WageProfile, אבל
+// עד שלב B2 הערכים היו קבועים בקוד. עכשיו הם מגיעים מ-Job, אבל
 // **ברירות המחדל מייצרות תוצאה זהה בדיוק** — 40 ₪ בסיס, סופ״ש 150% (=60),
-// נוספות 125%, סף 8 שעות, שישי משולם עד 23:00. זו הדרישה שאסור להפר:
+// נוספות 125%, סף 8 שעות. זו הדרישה שאסור להפר:
 // ימים שכבר הוזנו לא משנים את ערכם (spec.md 5.2).
+//
+// **הארכת שישי (fridayPaidUntil) הוסרה.** היא הייתה כלל של מקום עבודה אחד
+// שהוצג לכל משתמש כאילו הוא כללי, והיא שברה את הכלל שהמנוע משלם על הזמן
+// הרשום: משמרת 15:00–19:00 הייתה מוצגת כ-4 שעות ומשולמת כ-8. במקומה
+// המשמרת נרשמת בשעות שבהן היא משולמת בפועל — 15:00–23:00 — וזה נותן
+// בדיוק את אותם 460 ₪ (שעה בבסיס 40 + שבע שעות סופ״ש 60). מי שצריך
+// התנהגות כזו מגדיר אותה דרך חלון סוף השבוע והתעריפים, לא דרך חריג מוטבע.
 //
 // כל תעריף מיוצג כזוג mode+value:
 //   PERCENT  → אחוז מתעריף הבסיס. 150 = פי 1.5. שינוי הבסיס מתגלגל אוטומטית.
@@ -26,7 +33,8 @@ const DEFAULT_PROFILE = {
   weekendStartHour: 16,
   weekendEndDow: 0,
   weekendEndHour: 8,
-  fridayPaidUntil: "23:00",
+  defaultStart: "15:00",
+  defaultEnd: "23:00",
 };
 
 function withDefaults(profile) {
@@ -48,10 +56,12 @@ function dowOf(dateStr) {
   return new Date(y, m - 1, d).getDay();
 }
 
-function defaults(dow, profile) {
+// שעות ברירת המחדל ליום חדש — אחידות לכל ימי השבוע. עד שההארכה הוסרה
+// שישי קיבל 15:00–19:00 ונשען על שעת התשלום כדי להגיע ל-460; עכשיו השעות
+// הרשומות הן השעות המשולמות, ולכן אין יותר מקרה חריג.
+function defaults(profile) {
   const p = withDefaults(profile);
-  // ברירת המחדל לשישי נגזרת מהמשמרת בפועל, לא משעת התשלום
-  return dow === 5 ? { start: "15:00", end: "19:00" } : { start: "15:00", end: "23:00" };
+  return { start: p.defaultStart, end: p.defaultEnd };
 }
 
 // האם הדקה הזו נופלת בחלון סוף השבוע המוגדר בפרופיל.
@@ -73,7 +83,7 @@ function isWeekendMinute(baseDow, absMin, p) {
  * @param {string} dateStr 'YYYY-MM-DD'
  * @param {string} start 'HH:MM'
  * @param {string} end 'HH:MM'
- * @param {object} [profile] WageProfile; חסר → ברירות המחדל ההיסטוריות
+ * @param {object} [profile] תנאי השכר של מקום העבודה; חסר → ברירות המחדל
  * @param {boolean} [isHoliday] יום חג — משתמש בתעריף החג
  */
 function computeSalary(dateStr, start, end, profile, isHoliday = false) {
@@ -88,16 +98,6 @@ function computeSalary(dateStr, start, end, profile, isHoliday = false) {
   let e = toMin(end);
   if (e <= s) e += 1440; // חוצה חצות
   const actualH = (e - s) / 60;
-
-  // הארכת שישי: משמרת שמסתיימת מוקדם משולמת עד השעה שבפרופיל
-  let fridayExtended = false;
-  if (baseDow === 5 && p.fridayPaidUntil) {
-    const until = toMin(p.fridayPaidUntil);
-    if (until > e) {
-      e = until;
-      fridayExtended = true;
-    }
-  }
 
   const otStart = s + p.overtimeThresholdHours * 60;
   let regBase = 0, regWk = 0, otBase = 0, otWk = 0, pay = 0;
@@ -115,8 +115,9 @@ function computeSalary(dateStr, start, end, profile, isHoliday = false) {
     salary: Math.round(pay),
     dow: baseDow,
     actualH,
-    paidH: (e - s) / 60,
-    fridayExtended,
+    // paidH זהה ל-actualH מאז שההארכה הוסרה. השדה נשמר כי הצלבת התלוש
+    // וטבלאות הלקוח קוראות אותו, והסרתו הייתה שינוי רחב בלי תועלת.
+    paidH: actualH,
     isHoliday,
     regBaseH: regBase / 60,
     regWkH: regWk / 60,

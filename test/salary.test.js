@@ -11,7 +11,8 @@ const MON = "2026-08-10", FRI = "2026-08-14", SAT = "2026-08-15";
 
 test("רגרסיה: ברירות מחדל מחזירות את ערכי גרסה 1.0", () => {
   assert.equal(computeSalary(MON, "15:00", "23:00").salary, 320, "א'-ה' חייב להישאר 320");
-  assert.equal(computeSalary(FRI, "15:00", "19:00").salary, 460, "שישי חייב להישאר 460");
+  // שישי נרשם מאז ביטול ההארכה בשעות התשלום עצמן, והתוצאה זהה: 460
+  assert.equal(computeSalary(FRI, "15:00", "23:00").salary, 460, "שישי חייב להישאר 460");
   assert.equal(computeSalary(SAT, "15:00", "23:00").salary, 480, "שבת חייב להישאר 480");
 });
 
@@ -24,11 +25,29 @@ test("רגרסיה: משמרת מקוצרת ביום חול", () => {
   assert.equal(computeSalary("2026-08-06", "15:00", "19:00").salary, 160);
 });
 
-test("הארכת שישי מסומנת ומשולמת עד 23:00", () => {
-  const r = computeSalary(FRI, "15:00", "19:00");
-  assert.equal(r.fridayExtended, true);
-  assert.equal(r.actualH, 4);
+test("שישי 15:00-23:00 שקול בדיוק להארכה שבוטלה", () => {
+  // הכלל הישן שילם על משמרת 15:00-19:00 כאילו נמשכה עד 23:00 → 460.
+  // עכשיו אותן שעות נרשמות במפורש, והתוצאה חייבת להיות זהה.
+  const r = computeSalary(FRI, "15:00", "23:00");
+  assert.equal(r.salary, 460);       // שעה × 40 + שבע שעות × 60
+  assert.equal(r.actualH, 8);
   assert.equal(r.paidH, 8);
+});
+
+test("אין יותר הארכת שישי: משולם רק על הזמן הרשום", () => {
+  // אותה משמרת בזמנים הישנים משלמת עכשיו את מה שנרשם בלבד.
+  const r = computeSalary(FRI, "15:00", "19:00");
+  assert.equal(r.salary, 220);       // שעה × 40 + שלוש שעות × 60
+  assert.equal(r.actualH, 4);
+  assert.equal(r.paidH, 4, "paidH חייב להיות זהה ל-actualH — אין יותר שעות שלא נעבדו");
+  assert.equal(r.fridayExtended, undefined, "השדה הוסר מהפלט");
+});
+
+test("שישי מתנהג ככל יום אחר בחלון סוף השבוע", () => {
+  // אותה משמרת בדיוק בשבת ובשישי חולקת את אותו חלון סופ״ש מ-16:00,
+  // ולכן ההבדל היחיד נובע מהחלון — לא מכלל ייעודי לשישי.
+  assert.equal(computeSalary(FRI, "16:00", "23:00").salary, 420); // 7×60
+  assert.equal(computeSalary(SAT, "16:00", "23:00").salary, 420);
 });
 
 test("תעריף בסיס מותאם מגלגל את סופ״ש במצב אחוזים", () => {
@@ -69,16 +88,9 @@ test("חג גובר גם על יום חול רגיל", () => {
   assert.equal(holiday.isHoliday, true);
 });
 
-test("כיבוי הארכת שישי משלם לפי המשמרת בפועל", () => {
-  const r = computeSalary(FRI, "15:00", "19:00", { fridayPaidUntil: null });
-  assert.equal(r.fridayExtended, false);
-  // 15:00-16:00 בסיס 40 + 16:00-19:00 סופ״ש 3×60 = 220
-  assert.equal(r.salary, 220);
-});
-
 test("חלון סופ״ש מותאם משנה את נקודת המעבר", () => {
   // הזזת תחילת סופ״ש ל-14:00 → כל המשמרת בתעריף סופ״ש
-  const r = computeSalary(FRI, "15:00", "19:00", { weekendStartHour: 14, fridayPaidUntil: null });
+  const r = computeSalary(FRI, "15:00", "19:00", { weekendStartHour: 14 });
   assert.equal(r.salary, 240); // 4×60
   assert.equal(r.regBaseH, 0);
 });

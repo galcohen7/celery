@@ -47,7 +47,12 @@ npm run dev               # http://localhost:4000
 ## נקודות קצה (API)
 
 אימות:
-- `POST /api/auth/register` — body: `{ "firstName", "lastName", "email", "password" }` → מחזיר `{ token, user }`
+- `POST /api/auth/register` — body: `{ "name", "email", "password" }` → מחזיר `{ token, user }`
+  - `name` הוא שדה אחד (״מה שמך?״ באשף). השרת מפצל אותו בראשון הרווחים:
+    מה שלפניו הוא `firstName`, השאר `lastName`. שם משפחה אופציונלי.
+    לתאימות, `firstName`/`lastName` נפרדים עדיין מתקבלים וגוברים על `name`.
+  - **כלל הסיסמה:** 6 תווים לפחות, ורק ASCII מודפס — אותיות באנגלית, ספרות
+    וסימנים. עברית, שפות אחרות ורווחים נדחים. אותו כלל חל על `reset-password`.
 - `POST /api/auth/login` — body: `{ "email", "password" }` → מחזיר `{ token, user }`
 - `GET /api/auth/me` — דורש טוקן → מחזיר `{ user }` (הלקוח קורא לזה בטעינה כדי להציג את הברכה)
 
@@ -58,8 +63,16 @@ npm run dev               # http://localhost:4000
 
 יומן (דורש כותרת `Authorization: Bearer <token>`):
 - `GET /api/workdays` — כל ימי העבודה של המשתמש
-- `POST /api/workdays` — body: `{ "date", "start"?, "end"?, "salary"? }` — יוצר/מעדכן; השרת מחשב את השכר לפי החוקים אם לא נשלח ידנית
+- `POST /api/workdays` — body: `{ "date", "start"?, "end"?, "salary"? }` — יוצר/מעדכן; השרת מחשב את השכר לפי תנאי מקום העבודה אם לא נשלח ידנית. ללא `start`/`end` היום נכנס עם שעות ברירת המחדל של מקום העבודה.
 - `DELETE /api/workdays/:date` — מחיקת יום
+
+מקומות עבודה:
+- `GET /api/jobs` — רשימה + `needsOnboarding: true` כשאין אף אחד (הלקוח פותח בזה את אשף ההרשמה)
+- `POST /api/jobs` — body: `{ "name", "payType", "hourlyRate"?, "monthlySalary"? }`
+- `PUT /api/jobs/:id` — עדכון תנאי השכר, כולל `defaultStart`/`defaultEnd`
+- `POST /api/jobs/preview` — body: `{ "profile" }` → תצוגה מקדימה בלי לשמור
+
+עוד: `/api/expenses`, `/api/documents`, `/api/tax`, `/api/leave` — ראה `spec.md`.
 
 ## דוגמה מהירה (curl)
 

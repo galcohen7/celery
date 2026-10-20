@@ -21,7 +21,7 @@ model User {
   createdAt    DateTime             @default(now())
   workdays     WorkDay[]
   expenses     Expense[]
-  wageProfile  WageProfile?
+  jobs         Job[]
   taxProfile   TaxProfile?
   payslips     PayslipAnalysis[]
   statement    StatementLine[]
@@ -31,14 +31,17 @@ model User {
 model WorkDay {
   id     Int    @id @default(autoincrement())
   userId Int
+  jobId  Int?
   date   String // 'YYYY-MM-DD'
   dow    Int    // 0=ראשון ... 6=שבת
   start  String // 'HH:MM'
   end    String // 'HH:MM'
   salary Int
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job    Job?   @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, date])
+  // אותו יום יכול להופיע בשני מקומות עבודה שונים
+  @@unique([userId, jobId, date])
 }
 
 // סכומים נשמרים ב**אגורות** כמספר שלם, לא בשקלים עשרוניים.
@@ -62,18 +65,24 @@ model Expense {
   @@index([userId, date])
 }
 
-// פרופיל השכר האישי. מחליף את הקבועים שהיו בקוד (spec.md 5.1).
+// מקום עבודה. משתמש יכול להחזיק כמה מקומות במקביל, וכל אחד נושא את
+// תנאי השכר שלו. החלפה ביניהם בלוח המחוונים משנה את ההקשר של היומן.
 //
 // כל תעריף מיוצג כזוג mode+value: PERCENT = אחוז מתעריף הבסיס (150 → פי 1.5),
-// ABSOLUTE = סכום בשקלים לשעה. כך המשתמש יכול לכתוב "150%" או "60 ₪" — מה
-// שנוח לו — ושינוי תעריף הבסיס מתגלגל אוטומטית במצב PERCENT.
+// ABSOLUTE = סכום בשקלים לשעה.
 //
-// ⚠️ ברירות המחדל מייצרות בדיוק את ההתנהגות הקודמת: 40 ₪ בסיס, סופ״ש 150%
-// (=60), נוספות 125%, סף 8 שעות, שישי משולם עד 23:00. משתמש קיים לא רואה
-// שום שינוי בימים שכבר הוזנו — ואלה לא מחושבים מחדש לעולם (spec.md 5.2).
-model WageProfile {
-  id            Int    @id @default(autoincrement())
-  userId        Int    @unique
+// ⚠️ ברירות המחדל מייצרות בדיוק את ההתנהגות ההיסטורית: 40 ₪ בסיס, סופ״ש 150%
+// (=60), נוספות 125%, סף 8 שעות.
+//
+// אין כאן שדה "שישי משולם עד". ההארכה הוסרה — משמרת נרשמת בשעות שבהן היא
+// משולמת בפועל. ראה services/salary.js.
+model Job {
+  id            Int     @id @default(autoincrement())
+  userId        Int
+  name          String  @default("מקום עבודה")
+  employer      String?
+  isActive      Boolean @default(false)
+  archivedAt    DateTime?
   payType       String @default("HOURLY") // HOURLY | MONTHLY
   hourlyRate    Float  @default(40)
   monthlySalary Float?
@@ -90,7 +99,12 @@ model WageProfile {
   weekendStartHour       Int     @default(16)
   weekendEndDow          Int     @default(0)  // ראשון
   weekendEndHour         Int     @default(8)
-  fridayPaidUntil        String? @default("23:00") // null = ללא הארכה
+
+  // שעות ברירת המחדל להזנת יום חדש. נשמרות פר מקום עבודה כי משמרת
+  // סטנדרטית היא תכונה של המקום, לא של המשתמש. אחידות לכל ימי השבוע —
+  // ראה spec.md 5.3 על למה אין יותר חריג לשישי.
+  defaultStart String @default("15:00")
+  defaultEnd   String @default("23:00")
 
   // זכאות חופשה ומחלה. ברירת המחדל למחלה היא המינימום החוקי (1.5 ליום חודש,
   // תקרה 90). לחופשה אין ברירת מחדל: היא תלויה בוותק ובהסכם, ולכן נלקחת
@@ -99,8 +113,12 @@ model WageProfile {
   sickAccrualPerMonth  Float @default(1.5)
   sickAccrualCap       Float @default(90)
 
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workdays  WorkDay[]
+
+  @@index([userId])
 }
 
 // פרופיל המס האישי שמזין את מנוע המס.

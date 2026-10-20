@@ -5,6 +5,42 @@ const prisma = require("../config/db");
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NAME_MAX = 40;
+const PASSWORD_MIN = 6;
+
+// הסיסמה מוגבלת ל-ASCII מודפס בלבד: אותיות אנגליות, ספרות וסימנים.
+// למה לחסום עברית ושפות אחרות — ולא רק "להמליץ": מקלדת שמחליפה שפה,
+// ניקוד, ותווים שנראים זהים בין סקריפטים (א/ﺍ) מייצרים סיסמה שהמשתמש
+// לא מצליח להקליד שוב במכשיר אחר. עם שחזור הסיסמה במייל עדיין לא מחובר,
+// סיסמה שלא ניתן להקליד = חשבון אבוד. רווח נחסם מאותה סיבה.
+const PASSWORD_RE = /^[!-~]+$/;
+
+const PASSWORD_RULE =
+  "הסיסמה חייבת 6 תווים לפחות, ויכולה לכלול אותיות באנגלית, ספרות וסימנים בלבד (ללא עברית וללא רווחים).";
+
+// בודק סיסמה ומחזיר הודעת שגיאה, או null כשהיא תקינה.
+function passwordError(password) {
+  const pw = String(password || "");
+  if (pw.length < PASSWORD_MIN) return PASSWORD_RULE;
+  if (!PASSWORD_RE.test(pw)) return PASSWORD_RULE;
+  return null;
+}
+
+// ההרשמה שואלת "מה שמך?" בשדה אחד. שם מלא מפוצל בראשון הרווחים:
+// מה שלפניו הוא השם הפרטי — זה מה שמופיע בברכה — והשאר שם משפחה.
+// שם משפחה נשאר אופציונלי: הוא לא נדרש לשום דבר במערכת, ודרישה שלו
+// הייתה חוסמת מישהו שהזין שם אחד בלבד.
+function splitName(body) {
+  const first = String(body?.firstName || "").trim();
+  const last = String(body?.lastName || "").trim();
+  if (first) return { firstName: first, lastName: last || null };
+
+  const full = String(body?.name || "").replace(/\s+/g, " ").trim();
+  if (!full) return { firstName: "", lastName: null };
+  const i = full.indexOf(" ");
+  return i === -1
+    ? { firstName: full, lastName: null }
+    : { firstName: full.slice(0, i), lastName: full.slice(i + 1) };
+}
 
 function signToken(userId) {
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "7d" });
@@ -23,17 +59,18 @@ function publicUser(user) {
   };
 }
 
-// POST /api/auth/register
+// POST /api/auth/register — { name | firstName+lastName, email, password }
 async function register(req, res) {
   const { email, password } = req.body || {};
-  const firstName = String(req.body?.firstName || "").trim();
-  const lastName = String(req.body?.lastName || "").trim();
+  const { firstName, lastName } = splitName(req.body);
 
-  if (!firstName || !lastName) return res.status(400).json({ error: "יש למלא שם פרטי ושם משפחה" });
-  if (firstName.length > NAME_MAX || lastName.length > NAME_MAX)
+  if (!firstName) return res.status(400).json({ error: "יש להזין שם" });
+  if (firstName.length > NAME_MAX || (lastName && lastName.length > NAME_MAX))
     return res.status(400).json({ error: `שם ארוך מ-${NAME_MAX} תווים` });
   if (!EMAIL_RE.test(email || "")) return res.status(400).json({ error: "אימייל לא תקין" });
-  if (!password || password.length < 6) return res.status(400).json({ error: "הסיסמה חייבת 6 תווים לפחות" });
+
+  const pwErr = passwordError(password);
+  if (pwErr) return res.status(400).json({ error: pwErr });
 
   const exists = await prisma.user.findUnique({ where: { email } });
   if (exists) return res.status(409).json({ error: "אימייל זה כבר רשום" });
@@ -87,7 +124,9 @@ async function requestPasswordReset(req, res) {
 // POST /api/auth/reset-password
 async function resetPassword(req, res) {
   const { token, password } = req.body || {};
-  if (!password || password.length < 6) return res.status(400).json({ error: "הסיסמה חייבת 6 תווים לפחות" });
+  // אותו כלל בדיוק כמו בהרשמה — אחרת אפשר היה לעקוף אותו דרך איפוס.
+  const pwErr = passwordError(password);
+  if (pwErr) return res.status(400).json({ error: pwErr });
 
   const tokenHash = crypto.createHash("sha256").update(token || "").digest("hex");
   const rec = await prisma.passwordResetToken.findFirst({
@@ -103,4 +142,4 @@ async function resetPassword(req, res) {
   res.json({ ok: true });
 }
 
-module.exports = { register, login, me, requestPasswordReset, resetPassword };
+module.exports = { register, login, me, requestPasswordReset, resetPassword, passwordError, PASSWORD_RULE };
