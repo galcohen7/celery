@@ -1,5 +1,8 @@
-# הגדרת הפריסה ל-Render. Render קורא את הקובץ הזה ומקים אוטומטית
-# שירות ווב + מסד נתונים PostgreSQL מנוהל.
+# הגדרת הפריסה ל-Render. Render קורא את הקובץ הזה ומקים את שירות הווב.
+#
+# מסד הנתונים **לא** מוקם כאן: Postgres החינמי של Render פג אחרי 30 יום
+# ונמחק עם כל הנתונים. המסד יושב ב-Neon (שכבה חינמית שלא פגה), ואת
+# מחרוזת החיבור שלו מזינים ידנית בלוח הבקרה — ראה DEPLOY.md.
 services:
   - type: web
     name: celery-app
@@ -9,17 +12,10 @@ services:
     startCommand: npm start
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: celery-db
-          property: connectionString
+        sync: false              # מחרוזת החיבור של Neon, מוזנת ידנית ולא נשמרת ב-git
       - key: JWT_SECRET
         generateValue: true      # Render ייצר מחרוזת אקראית מאובטחת
       - key: ANTHROPIC_API_KEY
         sync: false              # מוזן ידנית בלוח הבקרה של Render, לא נשמר ב-git
       - key: NODE_ENV
         value: production
-
-databases:
-  - name: celery-db
-    plan: free
-    databaseName: celery
