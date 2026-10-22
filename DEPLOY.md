@@ -76,4 +76,9 @@ Render מזהה את הדחיפה ומעדכן את השרת אוטומטית.
   2. ב-**Connect** מכבים את **Connection pooling** ומעתיקים את המחרוזת (`postgresql://...?sslmode=require`). `prisma db push` צריך חיבור ישיר.
   3. ב-Render: **celery-app → Environment** ← `DATABASE_URL` = המחרוזת ← **Save, rebuild, and deploy**. הבנייה יוצרת את הטבלאות ב-Neon.
   4. גיבוי: גם מסד שלא פג אינו גיבוי. מדי פעם **⭳ גיבוי לקובץ** מתוך האפליקציה.
-- **מייל לאיפוס סיסמה:** עדיין לא מחובר שירות מייל, אז איפוס סיסמה בסביבת הייצור יחזיר את הקוד רק בלוגים בשלב זה. חיבור שירות מייל הוא צעד קטן בהמשך.
+- **מייל לאיפוס סיסמה — Brevo.** Render החינמי חוסם SMTP, ולכן השליחה ב-HTTPS דרך Brevo:
+  1. נרשמים ב-[brevo.com](https://brevo.com) (חינמי, 300 מיילים ביום).
+  2. **Senders, Domains & Dedicated IPs → Senders → Add a sender** ← הכתובת שלך ← מאשרים את מייל האימות.
+  3. **SMTP & API → API Keys → Generate a new API key** ← מעתיקים.
+  4. ב-Render: **celery-app → Environment** ← `BREVO_API_KEY` = המפתח, `MAIL_FROM` = הכתובת מסעיף 2 ← **Save, rebuild, and deploy**.
+  5. בדיקה: "שכחתי סיסמה" באתר. אם המייל לא מגיע — לבדוק בספאם, ובלוגים של Render לחפש `שליחת מייל איפוס נכשלה`.

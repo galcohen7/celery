@@ -19,3 +19,10 @@ services:
         sync: false              # מוזן ידנית בלוח הבקרה של Render, לא נשמר ב-git
       - key: NODE_ENV
         value: production
+      # מייל איפוס סיסמה — ראה DEPLOY.md
+      - key: BREVO_API_KEY
+        sync: false              # מפתח API של Brevo, מוזן ידנית
+      - key: MAIL_FROM
+        sync: false              # כתובת השולח שאומתה ב-Brevo
+      - key: APP_URL
+        value: https://celery-app-g0w2.onrender.com   # לקישור במייל

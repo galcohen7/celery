@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const prisma = require("../config/db");
+const mail = require("../services/mail");
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NAME_MAX = 40;
@@ -100,23 +101,52 @@ async function login(req, res) {
   res.json({ token: signToken(user.id), user: publicUser(user) });
 }
 
+const RESET_TTL_MS = 1000 * 60 * 30; // 30 דקות
+// מניעת הצפה: בקשה חוזרת לאותו חשבון בתוך דקה לא שולחת מייל נוסף.
+// בלי זה, כל אחד יכול להפציץ תיבת דואר זרה דרך הטופס.
+const RESET_COOLDOWN_MS = 1000 * 60;
+
 // POST /api/auth/forgot-password
 async function requestPasswordReset(req, res) {
   const { email } = req.body || {};
   const user = await prisma.user.findUnique({ where: { email: email || "" } });
+  const isDev = process.env.NODE_ENV !== "production";
 
-  // תמיד מחזירים ok כדי לא לחשוף אילו אימיילים רשומים במערכת
-  if (user) {
-    const raw = crypto.randomBytes(32).toString("hex");
-    const tokenHash = crypto.createHash("sha256").update(raw).digest("hex");
-    const expiresAt = new Date(Date.now() + 1000 * 60 * 30); // 30 דקות
-    await prisma.passwordResetToken.create({ data: { userId: user.id, tokenHash, expiresAt } });
+  // תמיד מחזירים ok — גם כשהמשתמש לא קיים וגם כשהשליחה נכשלה — כדי לא
+  // לחשוף אילו אימיילים רשומים במערכת.
+  if (!user) return res.json({ ok: true });
 
-    // בפרודקשן: לשלוח את הקישור במייל. בפיתוח: מדפיסים ומחזירים את הטוקן.
-    console.log(`[DEV] reset token for ${email}: ${raw}`);
-    if (process.env.NODE_ENV !== "production") {
-      return res.json({ ok: true, devToken: raw });
+  // קוד שנוצר לפני פחות מדקה ⇔ תוקפו מסתיים בעוד יותר מ-TTL פחות דקה
+  const recent = await prisma.passwordResetToken.findFirst({
+    where: { userId: user.id, used: false, expiresAt: { gt: new Date(Date.now() + RESET_TTL_MS - RESET_COOLDOWN_MS) } },
+  });
+  if (recent && !isDev) return res.json({ ok: true });
+
+  const raw = crypto.randomBytes(32).toString("hex");
+  const tokenHash = crypto.createHash("sha256").update(raw).digest("hex");
+  // קוד חדש מבטל את הקודמים — רק המייל האחרון תקף
+  await prisma.$transaction([
+    prisma.passwordResetToken.updateMany({ where: { userId: user.id, used: false }, data: { used: true } }),
+    prisma.passwordResetToken.create({
+      data: { userId: user.id, tokenHash, expiresAt: new Date(Date.now() + RESET_TTL_MS) },
+    }),
+  ]);
+
+  if (mail.isConfigured()) {
+    try {
+      await mail.sendPasswordReset(user.email, raw);
+    } catch (err) {
+      // הקוד עצמו לעולם לא נכתב ללוג בייצור — רק סיבת הכשל
+      console.error(`שליחת מייל איפוס נכשלה למשתמש ${user.id}:`, err.message);
     }
+  } else if (!isDev) {
+    console.error("איפוס סיסמה התבקש אבל שירות המייל אינו מוגדר (BREVO_API_KEY / MAIL_FROM).");
+  }
+
+  // בפיתוח בלבד: הקוד מוחזר בתגובה כדי שאפשר יהיה לבדוק בלי מייל
+  if (isDev) {
+    console.log(`[DEV] reset token for ${user.email}: ${raw}`);
+    return res.json({ ok: true, devToken: raw });
   }
   res.json({ ok: true });
 }

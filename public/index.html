@@ -1895,7 +1895,7 @@ authBtn.addEventListener("click",async()=>{
       const d=await api("/auth/forgot-password",{method:"POST",body:JSON.stringify({email})});
       showAuth("reset");
       if(d.devToken){ authRtoken.value=d.devToken; authNote.textContent="מצב פיתוח: קוד האיפוס מולא אוטומטית."; }
-      else authNote.textContent="אם האימייל רשום, נשלח אליו קוד איפוס.";
+      else authNote.textContent="אם האימייל רשום, נשלח אליו מייל עם קישור וקוד איפוס (תקף ל-30 דקות). כדאי לבדוק גם בספאם.";
     }else if(authMode==="reset"){
       const pe=pwError(p1);
       if(pe){ authErr.textContent=pe; return; }
@@ -1923,6 +1923,16 @@ $("logoutBtn").addEventListener("click",()=>{
 function showBanner(msg){bannerEl.textContent=msg;bannerEl.classList.remove("hidden");}
 
 async function init(){
+  // קישור מתוך מייל האיפוס: ?reset=<קוד>. מנקים את הכתובת מיד, כדי שהקוד
+  // לא יישאר בהיסטוריית הדפדפן או ישותף בטעות.
+  const resetCode=new URLSearchParams(location.search).get("reset");
+  if(resetCode){
+    history.replaceState(null,"",location.pathname);
+    showAuth("reset"); authRtoken.value=resetCode;
+    authNote.textContent="הקוד מולא מהקישור במייל. קבע סיסמה חדשה.";
+    setTimeout(()=>authPw1.focus?.(),60);
+    return;
+  }
   if(!token){ showAuth("login"); return; }
   try{
     // הטוקן הוא מקור האמת לזהות — שולפים את המשתמש מהשרת ולא מ-localStorage,
