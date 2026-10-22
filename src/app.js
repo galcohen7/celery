@@ -1,4 +1,5 @@
 require("dotenv").config();
+const fs = require("fs");
 const path = require("path");
 const express = require("express");
 const cors = require("cors");
@@ -7,6 +8,16 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// מנוע השכר משותף ללקוח: אותו קובץ בדיוק, עטוף כך שירוץ בדפדפן תחת
+// window.SalaryEngine. עד כאן ללקוח היה מנוע משלו עם 40 ₪ קבועים בקוד,
+// והוא התעלם מתנאי מקום העבודה. ככה יש מקור אמת אחד.
+const salarySrc = fs.readFileSync(path.join(__dirname, "services", "salary.js"), "utf8");
+app.get("/salary.js", (req, res) => {
+  res.type("application/javascript").send(
+    `window.SalaryEngine=(function(){var module={exports:{}};\n${salarySrc}\nreturn module.exports;})();`
+  );
+});
 
 // הגשת הלקוח (public/index.html) מאותו מקור כמו ה-API
 app.use(express.static(path.join(__dirname, "..", "public")));

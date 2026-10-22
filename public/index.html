@@ -613,43 +613,27 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo',system-u
 
 <div class="toast" id="toast"></div>
 
+<script src="/salary.js"></script>
 <script>
 const HEB_DAYS=["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"];
 const HEB_MONTHS=["ינואר","פברואר","מרץ","אפריל","מאי","יוני","יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר"];
-const BASE_RATE=40, WEEKEND_RATE=60, OT_MULT=1.25, OT_THRESHOLD_H=8;
 const pad=n=>String(n).padStart(2,"0");
 const dstr=(y,m,d)=>`${y}-${pad(m+1)}-${pad(d)}`;   // m 0-based
 const dowOf=ds=>{const[y,m,d]=ds.split("-").map(Number);return new Date(y,m-1,d).getDay();};
-const defaults=()=>({start:"15:00",end:"23:00"});
-const toMin=t=>{const[h,m]=t.split(":").map(Number);return h*60+m;};
-
-function rateAt(baseDow,absMin){
-  const dow=(baseDow+Math.floor(absMin/1440))%7, mid=absMin%1440;
-  const w=(dow===5&&mid>=16*60)||(dow===6)||(dow===0&&mid<8*60);
-  return w?WEEKEND_RATE:BASE_RATE;
-}
-function computePay(ds,start,end){
-  const baseDow=dowOf(ds);
-  let s=toMin(start),e=toMin(end); if(e<=s)e+=1440;
-  const actualH=(e-s)/60;
-  const otStart=s+OT_THRESHOLD_H*60;
-  let regBase=0,regWk=0,otBase=0,otWk=0,pay=0;
-  for(let t=s;t<e;t++){const rate=rateAt(baseDow,t);const isOT=t>=otStart;
-    pay+=(rate/60)*(isOT?OT_MULT:1);
-    if(isOT){rate===WEEKEND_RATE?otWk++:otBase++;}else{rate===WEEKEND_RATE?regWk++:regBase++;}}
-  return {salary:Math.round(pay),actualH,paidH:actualH,
-    regBaseH:regBase/60,regWkH:regWk/60,otBaseH:otBase/60,otWkH:otWk/60};
-}
+// החישוב והשעות מגיעים ממנוע השכר של השרת (/salary.js) לפי מקום העבודה
+// הפעיל — אותו מנוע ואותם תנאים שהשרת משתמש בהם.
+const defaults=()=>SalaryEngine.defaults(wageProfile);
+const computePay=(ds,start,end)=>SalaryEngine.computeSalary(ds,start,end,wageProfile);
 const fmtMoney=n=>Number(n||0).toLocaleString("he-IL");
 const fmtHours=n=>{const v=Number(n||0);return Number.isInteger(v)?String(v):v.toFixed(2).replace(/\.?0+$/,"");};
 const prettyDate=d=>{const p=d.split("-");return p[2]+"."+p[1]+"."+p[0];};
 const dowClass=dow=>dow===6?"dow-sat":dow===5?"dow-fri":"";
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-function breakdownText(r){const p=[];
-  if(r.regBaseH)p.push(fmtHours(r.regBaseH)+"×40");
-  if(r.regWkH)p.push(fmtHours(r.regWkH)+"×60");
-  if(r.otBaseH)p.push(fmtHours(r.otBaseH)+"×50 נוספות");
-  if(r.otWkH)p.push(fmtHours(r.otWkH)+"×75 נוספות");
+function breakdownText(r){const p=[],R=r.rates,x=n=>"×"+fmtHours(n);
+  if(r.regBaseH)p.push(fmtHours(r.regBaseH)+x(R.base));
+  if(r.regWkH)p.push(fmtHours(r.regWkH)+x(R.weekend));
+  if(r.otBaseH)p.push(fmtHours(r.otBaseH)+x(R.base*R.otMultiplier)+" נוספות");
+  if(r.otWkH)p.push(fmtHours(r.otWkH)+x(R.weekend*R.otMultiplier)+" נוספות");
   return p.join(" + ");}
 
 /* ===== חיבור לשרת (API) — הנתונים נשמרים בענן מאחורי התחברות ===== */
@@ -1492,7 +1476,7 @@ $("importFile").addEventListener("change",e=>{
       if(!Array.isArray(arr)) throw 0;
       const jobs=[];
       for(const x of arr){ if(x&&x.date)
-        jobs.push(upsertDay({date:x.date,start:x.start||"15:00",end:x.end||"23:00",salary:Number(x.salary)||0})); }
+        jobs.push(upsertDay({date:x.date,start:x.start||defaults().start,end:x.end||defaults().end,salary:Number(x.salary)||0})); }
       await Promise.all(jobs); await fetchEntries();
       render(); toast("השחזור הושלם");
     }catch(err){ toast("קובץ גיבוי לא תקין או שגיאת שרת"); }
